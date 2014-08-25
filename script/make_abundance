@@ -4,10 +4,25 @@ library(RJSONIO)
 library(dplyr)
 
 load("~/abu_genes/data/Abundance_Function/mRNA.1000.genus.rda")
+load("~/abu_genes/data/Abundance_Function/g454.1000.genus.rda")
+
+genus.all=merge(genus, genus.454, by=c("level","taxon","ko"), all=T)
+genus.all[is.na(genus.all)] = ""
+genus=genus.all
 
 taxa = unique(genus$taxon)
 query = "match (n:genus) where n.name ={nameoftaxa} return n.taxid"
 cypherurl = "192.168.100.1:7474/db/data/cypher"
+
+#query1="MATCH (genus:genus)
+#WHERE genus.name = {taxaname}
+#WITH genus
+#MATCH
+# path=genus-[:childof*]->(king:superkingdom)
+#RETURN
+# genus.name as NAME,
+# genus.taxid as TAXID,
+# last(extract(n in nodes(path)| n.name)) AS SUPERKINGDOM"
 
 taxid.df=do.call(rbind,lapply(as.character(taxa), function(taxon) { 
 post = toJSON(list(query = query, params = list(nameoftaxa= taxon)))
