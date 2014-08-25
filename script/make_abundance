@@ -1,0 +1,81 @@
+#!/usr/bin/env Rscript
+library(RCurl)
+library(RJSONIO)
+library(dplyr)
+
+load("~/abu_genes/data/Abundance_Function/mRNA.1000.genus.rda")
+
+taxa = unique(genus$taxon)
+query = "match (n:genus) where n.name ={nameoftaxa} return n.taxid"
+cypherurl = "192.168.100.1:7474/db/data/cypher"
+
+taxid.df=do.call(rbind,lapply(as.character(taxa), function(taxon) { 
+post = toJSON(list(query = query, params = list(nameoftaxa= taxon)))
+result = fromJSON(
+    getURL(cypherurl, 
+    	customrequest = "POST", 
+    	httpheader = c(`Content-Type` = "application/json"),
+    	postfields = post)
+)
+if(length(result$data) > 0){
+data.frame(taxon=taxon, taxid=unlist(result$data))
+}
+}))
+
+taxid.df=rbind(taxid.df, data.frame(taxon="Unclassified", taxid=0))
+
+#Match the taxon name to the id
+genus=merge(genus, taxid.df, by="taxon",all.x=T)
+genus$type = 'abundance'
+genus[is.na(genus)] = 0
+genus$ko  = paste("ko:",genus$ko,sep="")
+#this deals with things which are not mappable to any known genus in our current version of taxonomy
+
+write.table(
+	file="out/rels/ko2taxa.rel",sep="\t",
+	x=
+	genus[,c("ko","taxid","type","c1.mean","c1.sd","c1.raw","c2.mean","c2.sd","c2.raw")],
+	col.names=c("ko:string:koid","taxid:int:ncbitaxid", "type", 
+	"c1.mean:double", "c1.sd:double","c1.raw:int",
+	"c2.mean:double", "c2.sd:double","c2.raw:int"), quote=F, row.names=F
+	)
+
+load("~/GLO/data/contigs_rpkm_table")
+data$ko = paste("ko:",data$ko,sep="")
+data = subset(data, select=-(genus))
+data[is.na(data)] = 0
+
+#nodes
+contignodes = data %.% group_by(contig) %.% summarize(gDNA.b1=sum(gDNA.b1), mRNA.b1=sum(mRNA.b1), mRNA.b2=sum(mRNA.b2))
+contignodes$label = "contigs"
+
+#missing need to add label
+write.table(
+	file="out/nodes/contignodes", 
+	sep="\t", 
+	x = contignodes,
+	col.names=c("contig:string:contigid","gDNA.b1:double","mRNA.b1:double","mRNA.b2:double", "l:label"), quote=F,row.names=F)
+
+#relationships contig to KO
+
+contig2korels = data %.% group_by(contig,ko) %.% summarize(gDNA.b1=sum(gDNA.b1), mRNA.b1=sum(mRNA.b1), mRNA.b2=sum(mRNA.b2))
+contig2korels$type = "abundance"
+
+write.table(
+	file="out/rels/contig2ko.rel",
+	contig2korels[,c("contig","ko","type","gDNA.b1","mRNA.b1","mRNA.b2")],
+	col.names=c("contig:string:contigid", "ko:string:koid","type:string",
+	"gDNA.b1:double", "mRNA.b1:double","mRNA.b2:double"), 
+	quote=F,row.names=F,sep="\t")
+
+#relationships contig to taxa
+contig2taxa = data %.% group_by(contig,taxaid) %.% summarize(gDNA.b1=sum(gDNA.b1), mRNA.b1=sum(mRNA.b1), mRNA.b2=sum(mRNA.b2))
+contig2taxa$type = "abundance"
+
+write.table(
+	file="out/rels/contig2taxa.rel",
+	x=contig2taxa[,c("contig","taxaid","type", "gDNA.b1","mRNA.b1","mRNA.b2")], 
+	col.names=c("contig:string:contigid", "taxid:int:ncbitaxid","type:string",
+	"gDNA.b1:double", "mRNA.b1:double","mRNA.b2:double"),
+	quote=F, row.names=F,sep="\t")
+

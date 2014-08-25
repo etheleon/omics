@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+#Today's date
+datee=`date +%Y%m%d%H%M`
+
+#Declare function::join, to concatenate elements in the array into a single string
+function join { local IFS="$1"; shift; echo "$*"; }
+
+#create neo4j database
+batchproperties="/export2/home/uesu/db/neo4j/config/batch.properties"
+output="/export2/home/uesu/db/neo4j/out/database/"`date +%Y%m%d`"_altimit.db"
+
+##################################################
+#nodes
+##################################################
+nodes=()
+
+#KEGG
+#nodes+=('/export2/home/uesu/github/iomics4j/KEGG2014/nodes/newcpdnodes')		#cpds
+nodes+=('/export2/home/uesu/db/neo4j/out/nodes/newcpdnodes')				#ko
+#nodes+=('/export2/home/uesu/github/iomics4j/KEGG2014/nodes/newkonodes')		#old ko
+nodes+=('/export2/home/uesu/db/neo4j/out/nodes/newkonodes')				#ko
+#nodes+=('/export2/home/uesu/github/iomics4j/KEGG2014/nodes/pathwaynodes')		#old pathway
+nodes+=('/export2/home/uesu/db/neo4j/out/nodes/pathwaynodes')				#pathway
+
+#TAXONOMY
+nodes+=('/export2/home/uesu/db/neo4j/out/nodes/tax_nodes')				#taxa
+#nodes+=('/export2/home/uesu/github/iomics4j/NCBI_taxo/taxo_index2/nodes/tax_nodes')	#old taxa
+
+#ABUNDANCE
+nodes+=('/export2/home/uesu/db/neo4j/out/nodes/contignodes')
+
+##################################################
+#edges
+##################################################
+rels=()
+
+#KEGG
+#rels+=("/export2/home/uesu/github/iomics4j/KEGG2014/rels/newcpdrels")		#incoming
+#rels+=("/export2/home/uesu/github/iomics4j/KEGG2014/rels/newkorels")		#outgoing
+#rels+=("/export2/home/uesu/github/iomics4j/KEGG2014/rels/ko2pathwayrels")	
+
+rels+=("/export2/home/uesu/db/neo4j/out/rels/newcpdrels")		#incoming
+rels+=("/export2/home/uesu/db/neo4j/out/rels/newkorels")		#outgoing
+rels+=("/export2/home/uesu/db/neo4j/out/rels/ko2pathwayrels")	
+
+#TAXONOMY
+#rels+=("/export2/home/uesu/github/iomics4j/NCBI_taxo/taxo_index2/rels/tax2tax.rel")	#old taxa
+rels+=('/export2/home/uesu/db/neo4j/out/rels/tax2tax.rel')	#taxa
+
+#ABUNDANCE
+rels+=('/export2/home/uesu/db/neo4j/out/rels/ko2taxa.rel')
+#--Contig abundance
+rels+=('/export2/home/uesu/db/neo4j/out/rels/contig2ko.rel')
+rels+=('/export2/home/uesu/db/neo4j/out/rels/contig2taxa.rel')
+
+##################################################
+#Combined input
+##################################################
+allnodes=$(join ',' "${nodes[@]}")
+allrels=$(join ',' "${rels[@]}")
+
+echo -e "Generating database with:\n"	#STDOUT
+
+##################################################
+#Execute 
+##################################################
+front='mvn clean compile exec:java -Dexec.mainClass="org.neo4j.batchimport.Importer" -Dexec.args="'$batchproperties' '$output' '$allnodes' '$allrels'"'
+eval $front
