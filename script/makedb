@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+#This bash script must be executed in the neo4j batch import folder
 #Today's date
 datee=`date +%Y%m%d%H%M`
 

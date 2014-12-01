@@ -11,48 +11,58 @@ genus.all[is.na(genus.all)] = ""
 genus=genus.all
 
 taxa = unique(genus$taxon)
-query = "match (n:genus) where n.name ={nameoftaxa} return n.taxid"
+#query = "MATCH (n:genus) where n.name ={nameoftaxa} return n.taxid"
 cypherurl = "192.168.100.1:7474/db/data/cypher"
+#cypherurl = "localhost:7474/db/data/cypher"
 
-#query1="MATCH (genus:genus)
-#WHERE genus.name = {taxaname}
-#WITH genus
-#MATCH
-# path=genus-[:childof*]->(king:superkingdom)
-#RETURN
-# genus.name as NAME,
-# genus.taxid as TAXID,
-# last(extract(n in nodes(path)| n.name)) AS SUPERKINGDOM"
+query="MATCH (genus:genus)
+WHERE genus.name = {taxaname}
+WITH genus
+MATCH
+ path=genus-[:childof*]->(king:superkingdom)
+RETURN
+ genus.name as NAME,
+ genus.taxid as TAXID,
+ last(extract(n in nodes(path)| n.name)) AS SUPERKINGDOM"
 
 taxid.df=do.call(rbind,lapply(as.character(taxa), function(taxon) { 
-post = toJSON(list(query = query, params = list(nameoftaxa= taxon)))
+post = toJSON(list(query = query, params = list(taxaname= taxon)))
 result = fromJSON(
     getURL(cypherurl, 
     	customrequest = "POST", 
-    	httpheader = c(`Content-Type` = "application/json"),
-    	postfields = post)
-)
-if(length(result$data) > 0){
-data.frame(taxon=taxon, taxid=unlist(result$data))
-}
-}))
+    	httpheader = c(`Content-Type` = "application/json"), postfields =
+post)) 
+as.data.frame(do.call(rbind,lapply(result$data, function(x) matrix(x, nrow=1))))
+} ))
 
-taxid.df=rbind(taxid.df, data.frame(taxon="Unclassified", taxid=0))
+#length(unique(taxid.df$taxon))	#1529
+taxid.df=setNames(taxid.df, c("taxon","taxid", "superkingdom"))
+
+#keep only bacteria, archea?
+taxid.df=subset(taxid.df, superkingdom %in% c("Bacteria","Archaea"))
+
+#add unclassified
+taxid.df=rbind(taxid.df, data.frame(taxon="Unclassified", taxid=0, superkingdom=""))
+
 
 #Match the taxon name to the id
-genus=merge(genus, taxid.df, by="taxon",all.x=T)
-genus$type = 'abundance'
-genus[is.na(genus)] = 0
+genus			 =merge(genus, taxid.df, by="taxon",all.y=T)
+genus$type 		 = 'abundance'
+genus[is.na(genus)] 	 = 0
 genus$ko  = paste("ko:",genus$ko,sep="")
+genus = subset(genus, select=-superkingdom)
 #this deals with things which are not mappable to any known genus in our current version of taxonomy
+genus=setNames(as.data.frame(do.call(cbind,lapply(1:ncol(genus), function(x) { unname(as.character(unlist( genus[,x]))) }))), colnames(genus))
 
 write.table(
 	file="out/rels/ko2taxa.rel",sep="\t",
 	x=
-	genus[,c("ko","taxid","type","c1.mean","c1.sd","c1.raw","c2.mean","c2.sd","c2.raw")],
+	head(genus[,c("ko","taxid","type","c1.mean","c1.sd","c1.raw","c2.mean","c2.sd","c2.raw", "g1.mean","g1.sd","g1.raw","g2.mean","g2.sd","g2.raw")]),
 	col.names=c("ko:string:koid","taxid:int:ncbitaxid", "type", 
 	"c1.mean:double", "c1.sd:double","c1.raw:int",
-	"c2.mean:double", "c2.sd:double","c2.raw:int"), quote=F, row.names=F
+	"c2.mean:double", "c2.sd:double","c2.raw:int",
+	"g1.mean:double", "g1.sd:double","g1.raw:int",
+	"g2.mean:double", "g2.sd:double","g2.raw:int"), quote=F, row.names=F
 	)
 
 load("~/GLO/data/contigs_rpkm_table")

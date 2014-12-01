@@ -2,7 +2,7 @@
 
 #Taxonomy
 targetdir=$HOME/db/neo4j/out
-taxodump=$HOME/db/taxonomy_latest
+taxodump=$HOME/db/taxonomy
 
 #-- NODES
 #indexing::::propertyname:fieldtype:indexName##########

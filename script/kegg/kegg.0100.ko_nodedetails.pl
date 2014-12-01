@@ -13,5 +13,8 @@ while(<INPUT>) {
     my ($KO) = $_ =~ m/ENTRY\s+(K\d+)/xsm;
     my ($NAME) = $_ =~ m/NAME\s+(.*?)\n/xsm;
     my ($DEF) = $_ =~ m/DEFINITION\s+(.*?)\n/xsm;
-    print "ko:$KO\t$NAME\t$DEF\n";
+    say "ko:$KO\t$NAME\t$DEF";
 }
+
+__END__
+the output will be ko_nodedetails
