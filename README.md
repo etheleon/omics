@@ -15,7 +15,7 @@ relation to metabolism:
 * Proteomics
 * Lipidomics
 
-Meta4j serves as a customized database for the series of analytic tools designed by Wesley GOI, XIE Chao and Peter Little. 
+Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter *LITTLE*. 
 
 Publication:
 
