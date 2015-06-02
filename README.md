@@ -19,3 +19,4 @@ option to just include things in archaea and bacteria
 
 #BUG
 * pathways include node `pathway pathway.name    pathway` which isnt suppose to be inside
+* non-metabolic pathways eg. 2-component system arent included. 

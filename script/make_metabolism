@@ -1,26 +1,22 @@
 #!/usr/bin/env bash
 
-#Taxonomy
 targetdir=$HOME/db/neo4j
 keggdump=$HOME/KEGG/KEGG_SEPT_2014
-#keggdump=$HOME/KEGG/KEGG_JAN_2014/ftp.bioinformatics.jp/kegg
-#keggdump=$HOME/KEGG/kegg_dump
-#Initial processing
 
+#Initial processing
 script/kegg/kegg.0100.ko_nodedetails.pl  $keggdump/genes/ko/ko > $targetdir/misc/ko_nodedetails
 script/kegg/kegg.0200.cpd_nodedetails.pl  $keggdump/ligand/compound/compound $keggdump/ligand/glycan/glycan > $targetdir/misc/cpd_nodedetails
-script/kegg/kegg.0300.import.r $keggdump $targetdir/misc	#not tested
-cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist 		
-
-
+script/kegg/kegg.0300.import.r $keggdump $targetdir/misc
+cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 
 #################################################
 #NODES
 ##################################################
 
-#--KOs
-#combines redundant ko entries into one with pathways as arrays 
+#' #KOs
+#' combines redundant ko entries into one with pathways as arrays 
 rm $targetdir/out/nodes/newkonodes
+
 for i in `perl -aln -F"\t" -e 'print $F[0]' $targetdir/misc/*_konodes | sort | uniq | head -n -1 `	#For each ko
 do
 grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]);END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
@@ -33,10 +29,9 @@ echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonod
 #Add in non-metabolic kos
 ./script/kegg/kegg.0400.non-metabolic.pl
 
-#prepare nodes (escape lucene metacharacters)
+#Prepare nodes (escape lucene (neo4j's query engine) metacharacters)
 #shd do this for all but lets just let it be first
 perl -pi -e 's/([\+-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/ unless $. == 1' out/nodes/newkonodes
-echo "lalal+lala" | perl -pi -e 's/([:\+])/\\$1/'
 #perl -0777 -pi -e 'print qq(ko:string:koid\tname\tdefinition\tl:label\tpathway:string_array\tpathway.name:string_array\n)' nodes/newkonodes
 
 
