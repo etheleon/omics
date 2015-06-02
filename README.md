@@ -3,9 +3,11 @@ Meta4j
 
 ## Introduction 
 
-**Meta4J** is a CLI tool for creation of a integrated `-OMICS` graph database used for data warehousing when investigating microbial communities.
+**Meta4J** is a CLI tool for creation of a integrated `-OMICS` graph database used for data warehousing a integrated `-omics` microbial communities project.
+It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets.
 
-Meta4j was created to address issues with integrating increasingly complexity in biological datasets of the following origins:
+Meta4j was created to address issues surrounding the storage and integration of increasingly complexity in biological datasets of the following origins particularly in 
+relation to metabolism:
 
 * Genomics
 * Transcriptomics
@@ -13,8 +15,12 @@ Meta4j was created to address issues with integrating increasingly complexity in
 * Proteomics
 * Lipidomics
 
-Meta4j serves as a customized backbone for a series of analytic tools designed by Wesley GOI, XIE Chao and Peter Little (SCELSE)
-Scripts are organised into two groups:
+Meta4j serves as a customized database for the series of analytic tools designed by Wesley GOI, XIE Chao and Peter Little. 
+
+Publication:
+
+Scripts are organised into 2 categories:
+
 1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database.
 2. Creation and starting of neo4j graph database.
 
@@ -25,16 +31,17 @@ Scripts are organised into two groups:
 - KEGG (Functional Database)
 - NCBI’s Taxonomy database
 - Relative abundance (gDNA and cDNA)
-- Contigs data
+- CONTIG data (diversity sampling using *pAss*)
+
 
 ### KEGG (Functional Database)
 
 Generated from 3 files from the KEGG database:
 
 ```
-curl --create-dirs -o kegg/genes/ko.tar.gz              "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
-curl --create-dirs -o kegg/ligand/compound.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
-curl --create-dirs -o kegg/xml/kgml/metabolic/ko.tar.gz "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
+$ curl --create-dirs -o kegg/genes/ko.tar.gz              "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
+$ curl --create-dirs -o kegg/ligand/compound.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
+$ curl --create-dirs -o kegg/xml/kgml/metabolic/ko.tar.gz "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/xml/kgml/metabolic/ko.tar.gz"
 ```
 
 1. Ortholog details are retrieved by parsing `genes/ko/ko`.
