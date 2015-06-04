@@ -17,7 +17,10 @@ relation to metabolism:
 
 Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter *LITTLE*. 
 
-Publication:
+## Publication:
+
+
+## General 
 
 Scripts are organised into 2 categories:
 
@@ -61,6 +64,9 @@ option to just include things in archaea and bacteria
 
 ### Contig Data
 
+Requires the contigs to be provided in the following manner
+
+
 ## Downloading latest database
 
 `USAGE: download.pl`
@@ -75,7 +81,7 @@ make.pl
 ## Prerequisites
 
 ### Abundance data
-Users will have to run a blastx aligner (eg. [rapsearch2](omics.informatics.indiana.edu/mg/RAPSearch2/), [diamond](https://github.com/bbuchfink/diamond/)) 
+Users will have to run a blastx aligner (eg. [rapsearch2](http://omics.informatics.indiana.edu/mg/RAPSearch2/), [diamond](https://github.com/bbuchfink/diamond/)) 
 against a protein sequence database for detecting remote homologies.
 
 ### Installation
