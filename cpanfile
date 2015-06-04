@@ -1,3 +1,4 @@
+requires 'FindBin';
 requires 'Modern::Perl';
 requires 'experimental';
 requires 'Pod::Usage';
