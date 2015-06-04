@@ -66,6 +66,37 @@ option to just include things in archaea and bacteria
 
 Requires the contigs to be provided in the following manner
 
+#### Nodes
+
+```
+contig:string:contigid  cDNAFreq:double  cDNAFPKM:double    gDNAFreq:double  gDNAFPKM:double      l:label
+K00001:contig00002      1                0.735646998316564  535              8.59366116025439     contigs
+K00001:contig00004      1                0.847019850651342  66               1.22065378091888     contigs
+K00001:contig00005      1                0.864235701274337  18               0.33967195012266     contigs
+K00001:contig00007      1                1.00283954015796   33               0.722604007100565    contigs
+K00001:contig00008      2                1.9869344160139    9                0.195232008715361    contigs
+K00001:contig00010      2                2.22619876977473   105              2.5519855938535      contigs
+K00001:contig00011      1                1.10156467623568   239              5.74861043048696     contigs
+K00001:contig00014      2                2.08433316189693   45               1.02401102610508     contigs
+K00001:contig00015      1                1.05248506194796   46               1.05713085467217     contigs
+```
+
+#### Edges
+
+contig2ko
+```
+contig:string:contigid  ko:string:koid
+K00001:contig00002      ko:K00001
+K00001:contig00004      ko:K00001
+K00001:contig00005      ko:K00001
+K00001:contig00007      ko:K00001
+K00001:contig00008      ko:K00001
+K00001:contig00010      ko:K00001
+K00001:contig00011      ko:K00001
+K00001:contig00014      ko:K00001
+K00001:contig00015      ko:K00001
+```
+
 
 ## Downloading latest database
 
@@ -91,12 +122,14 @@ If you’re building diamond on a older server please mail the author at wesley@
 
 ### Perl
 
-Minimal v5.10 is required
+1. v5.20.2 is required: 
+   Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install local perl 
+   and **CPANMINUS**, a perl package manager with `curl -L https://cpanmin.us | perl - App::cpanminus` 
+
+2. Install dependencies
+    * Install Carton using `$ cpanm Carton`.
+    * run `carton` in package’s root directory
 
 # BUG
-
 * pathways include node `pathway pathway.name    pathway` which isnt suppose to be inside
 * non-metabolic pathways eg. 2-component system arent included. 
-
-
-
