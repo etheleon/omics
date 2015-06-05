@@ -3,17 +3,17 @@ library(dplyr)
 library(magrittr)
 library(XML)
 library(parallel)
-#args=commandArgs(T)
+args=commandArgs(T)
 
 #' #Metabolism
 
 ftpAddress = 'ftp://ftp.bioinformatics.jp/kegg/'
 #wget --user=username --password=password -P ~/KEGG/KEGG_JAN_2014 -m ftp://ftp.bioinformatics.jp/kegg/
 
-args=c(
-"~/KEGG/KEGG_SEPT_2014", #KEGG root FTP directory
-"~/db/neo4j/misc"        #cpd and node data directory
-)
+#args=c(
+#"~/KEGG/KEGG_SEPT_2014", #KEGG root FTP directory
+#"~/db/neo4j/misc"        #cpd and node data directory
+#)
 
 #TODO: Adding optParse into the script
 

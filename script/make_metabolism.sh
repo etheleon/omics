@@ -2,6 +2,7 @@
 
 targetdir=$HOME/db/neo4j
 keggdump=$HOME/KEGG/KEGG_SEPT_2014
+meta4jHome=$HOME/downloads/meta4j
 
 #Initial processing
 script/kegg/kegg.0100.ko_nodedetails.pl  $keggdump/genes/ko/ko > $targetdir/misc/ko_nodedetails
@@ -31,7 +32,7 @@ echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonod
 
 #Prepare nodes (escape lucene (neo4j's query engine) metacharacters)
 #shd do this for all but lets just let it be first
-perl -pi -e 's/([\+-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/ unless $. == 1' out/nodes/newkonodes
+perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/ unless $. == 1' out/nodes/newkonodes
 #perl -0777 -pi -e 'print qq(ko:string:koid\tname\tdefinition\tl:label\tpathway:string_array\tpathway.name:string_array\n)' nodes/newkonodes
 
 
