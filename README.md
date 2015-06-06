@@ -29,6 +29,12 @@ Scripts are organised into 2 categories:
 
 **NOTE**: For accessing the database and functions used in the analytical pipeline use the `MetamapsDB` R package from `etheleon/metamaps`.
 
+## NEO4J
+
+Install [NEO4J](http://neo4j.com/download/)
+
+[tarball for neo4j community OSX/linux](http://info.neotechnology.com/download-thanks.html?edition=community&release=2.3.0-M01&flavour=unix&_ga=1.119121161.1401797244.1431421615)
+
 ## Data Components
 
 - KEGG (Functional Database)
@@ -105,8 +111,11 @@ K00001:contig00015      ko:K00001
 ## Usage
 
 ```
-./configure.sh --neo4j=<path/to/neo4j-shell> --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
+$ ./configure.sh --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
 make.pl
+
+eg. 
+$ ./configure.pl -d=taxonomy -d=contig -d=metabolism -kegg=/export2/home/uesu/KEGG/KEGG_SEPT_2014/ -c=out/miscDB
 ```
 
 ## Prerequisites
@@ -115,7 +124,7 @@ make.pl
 Users will have to run a blastx aligner (eg. [rapsearch2](http://omics.informatics.indiana.edu/mg/RAPSearch2/), [diamond](https://github.com/bbuchfink/diamond/)) 
 against a protein sequence database for detecting remote homologies.
 
-### Installation
+### Installation`
 Using `linuxbrew` is highly recommended for either rapsearch2 or diamond
 
 If you’re building diamond on a older server please mail the author at wesley@bic.nus.edu.sg for the binary.
@@ -129,6 +138,12 @@ If you’re building diamond on a older server please mail the author at wesley@
 2. Install dependencies
     * Install Carton using `$ cpanm Carton`.
     * run `carton` in package’s root directory
+
+### R
+
+1. v3.1.1 is required
+
+2. Install dependencies using 
 
 # BUG
 * pathways include node `pathway pathway.name    pathway` which isnt suppose to be inside
