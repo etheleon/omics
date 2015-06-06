@@ -111,7 +111,7 @@ K00001:contig00015      ko:K00001
 ## Usage
 
 ```
-$ ./configure.sh --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
+$ ./configure.pl --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
 make.pl
 
 eg. 
