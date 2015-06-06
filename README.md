@@ -50,7 +50,15 @@ Generated from 3 files from the KEGG database:
 ```
 $ curl --create-dirs -o kegg/genes/ko.tar.gz              "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
 $ curl --create-dirs -o kegg/ligand/compound.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
+$ curl --create-dirs -o kegg/ligand/glycan.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
 $ curl --create-dirs -o kegg/xml/kgml/metabolic/ko.tar.gz "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/xml/kgml/metabolic/ko.tar.gz"
+
+#Bash script
+array=( "kegg/genes/ko.tar.gz" "kegg/ligand/compound.tar.gz" "kegg/ligand/glycan.tar.gz" "kegg/xml/kgml/metabolic/ko.tar.gz")
+for i in "${array[@]}"
+do
+   curl --create-dirs -o $i ftp://<user>:<password>@ftp.bioinformatics.jp/$i
+done
 ```
 
 1. Ortholog details are retrieved by parsing `genes/ko/ko`.
