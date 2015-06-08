@@ -27,14 +27,17 @@ my $keyStore =
 ##################################################
 
 my @specs = (
-    Param  ("path|P|p")->default($ENV{"HOME"}),
-    Param  ("projectName|N|n")->default("meta4j"),
-    List   ("dataSets|d|D"),
-    Param  ("kegg|K|k")->needs("dataSets"),
-    Param  ("contig|c|C")->needs("dataSets"),
-    List   ("memory|M|m"),
-    Param  ("threads|T|t")->default(1),
-    Switch ("help|H|h")
+    Param  ("path|p")->default($ENV{"HOME"})->anycase(),
+    Param  ("projectName|n")->default("meta4j")->anycase(),
+    List   ("dataSets|d")->anycase(),
+    Param  ("kegg|k")->needs("dataSets")->anycase(),
+    Param  ("contig|c")->needs("dataSets")->anycase(),
+    List   ("memory|m")->anycase(),
+    Param  ("threads|t")->default(1)->anycase(),
+    Switch ("ftp|f")->anycase()
+    Param  ("user|u")->needs("ftp")->anycase(),
+    Param  ("password|w")->need("ftp")->anycase(),
+    Switch ("help|h")->anycase()
 );
 
 my $opt = Getopt::Lucid->getopt( \@specs );
@@ -107,7 +110,12 @@ wesley@bic.nus.edu.sg
 
 =cut
 
-
+if ($opt->get_ftp){
+    my $username = $opt->get_user;
+    my $password = $opt->get_password;
+    my $keggPath = $opt->get_kegg;
+    map { system "curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_" } qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz);
+}
 
 # 1. create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;

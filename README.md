@@ -23,6 +23,8 @@ Meta4j serves as a customized database for the series of analytic tools designed
 
 ## General
 
+![workflow](./workflow.png)
+
 Scripts are organised into 2 categories:
 
 1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database. Found in the `script` folder
