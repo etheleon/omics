@@ -20,12 +20,26 @@ Meta4j serves as a customized database for the series of analytic tools designed
 ## Publication:
 
 
-## General 
+## General
 
 Scripts are organised into 2 categories:
 
 1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database.
 2. Creation and starting of neo4j graph database.
+
+__OMICS__
+now currently uses a submodule keggParser. Run the following commands after cloning this repository
+
+```
+$ git submodule init
+$ git submodule update
+```
+
+[git documentation](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+
+> Here we’ll clone a project with a submodule in it.
+> When you clone such a project, by default you get the directories that contain submodules, 
+> but none of the files within them yet:
 
 **NOTE**: For accessing the database and functions used in the analytical pipeline use the `MetamapsDB` R package from `etheleon/metamaps`.
 

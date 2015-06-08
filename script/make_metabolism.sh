@@ -29,7 +29,7 @@ perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newkonodes	#protects removes
 echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonodes	#empty field
 
 #Add in non-metabolic kos
-./script/kegg/kegg.0400.non-metabolic.pl
+./script/kegg/kegg.0400.non-metabolic.pl $targetdir
 
 #Prepare nodes (escape lucene (neo4j's query engine) metacharacters)
 #shd do this for all but lets just let it be first
