@@ -12,7 +12,8 @@ ftpAddress = 'ftp://ftp.bioinformatics.jp/kegg/'
 
 #args=c(
 #"~/KEGG/KEGG_SEPT_2014", #KEGG root FTP directory
-#"~/db/neo4j/misc"        #cpd and node data directory
+#"~/db/neo4j/misc",       #cpd and node data directory
+#1
 #)
 
 #TODO: Adding optParse into the script
@@ -157,7 +158,7 @@ rxns = xml_data[which(names(xml_data) %in% "reaction")]
 }else{
 sprintf("%s does not contain reactions", listing) %>% warning()
         }
-}, mc.cores=10)
+}, mc.cores=args[3])
 
 #Batch import step
 
