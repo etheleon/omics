@@ -17,10 +17,7 @@ relation to metabolism:
 * Proteomics
 * Lipidomics
 
-Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter *LITTLE*. 
-
-## Publication:
-
+Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter **LITTLE**. 
 
 ## General
 
@@ -184,3 +181,5 @@ Install [Hombrew](http://brew.sh/)
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 $ brew install neo4j
 ```
+
+## Publication
