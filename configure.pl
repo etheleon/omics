@@ -12,8 +12,8 @@ use Carp;
 #required use cpanfile
 use Modern::Perl '2015';
 use experimental qw/signatures postderef/;
-use autodie;
 use Getopt::Lucid qw( :all );
+use autodie;
 
 my $keyStore =
 {
