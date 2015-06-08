@@ -3,8 +3,12 @@ Meta4j
 
 ## Introduction 
 
-**Meta4J** is a CLI tool for creation of a integrated `-OMICS` graph database used for data warehousing a integrated `-omics` microbial communities project.
+**Meta4J** is a CLI tool for creation of a integrated `-omics` graph database used for data warehousing a integrated `-omics` microbial communities project.
+
 It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets.
+
+> Modularity - Still in progress
+> Currently supports the creation of a metabolic network integrated with KO data. 
 
 Meta4j was created to address issues surrounding the storage and integration of increasingly complexity in biological datasets of the following origins particularly in 
 relation to metabolism:
@@ -15,25 +19,42 @@ relation to metabolism:
 * Proteomics
 * Lipidomics
 
-Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter *LITTLE*. 
+Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter **LITTLE**. 
 
-## Publication:
-
-
-## General 
+## General
 
 Scripts are organised into 2 categories:
 
-1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database.
-2. Creation and starting of neo4j graph database.
+1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database. Found in the `script` folder
+2. Creation and starting of neo4j graph database. (dot DB file)
 
-**NOTE**: For accessing the database and functions used in the analytical pipeline use the `MetamapsDB` R package from `etheleon/metamaps`.
+__OMICS__
+now currently uses a submodule [keggParser](https://github.com/etheleon/keggParser). 
+Run the following commands after cloning this repository to clone `keggParser`.
 
-## NEO4J
+```
+$ git submodule init
+$ git submodule update
+```
 
-Install [NEO4J](http://neo4j.com/download/)
+[git documentation on submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
-[tarball for neo4j community OSX/linux](http://info.neotechnology.com/download-thanks.html?edition=community&release=2.3.0-M01&flavour=unix&_ga=1.119121161.1401797244.1431421615)
+> Here we’ll clone a project with a submodule in it.
+> When you clone such a project, by default you get the directories that contain submodules, 
+> but none of the files within them yet:
+
+**NOTE**: For accessing the database and functions used in the analytical pipeline use the `MetamapsDB` R package from [MetamapsDB](https://github.com/etheleon/metamaps).
+
+## Usage
+
+```
+$ ./configure.pl --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
+
+eg. 
+$ ./configure.pl -d=taxonomy -d=contig -d=metabolism -k=/export2/home/uesu/KEGG/KEGG_SEPT_2014/ -c=out/miscDB
+```
+
+Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
 
 ## Data Components
 
@@ -45,12 +66,22 @@ Install [NEO4J](http://neo4j.com/download/)
 
 ### KEGG (Functional Database)
 
-Generated from 3 files from the KEGG database:
+Generated from 4 files:
+
+
+from the KEGG database (use the following commands to download the necessary files from KEGG ftp):
+
+| File | description |
+| ---- | ---- |
+|`/kegg/genes/ko.tar.gz`| KO details |
+|`/kegg/ligand/compound.tar.gz` | Ligand:CPD details| 
+|`/kegg/ligand/glycan.tar.gz` | Ligand:GLY details |
+|`/kegg/xml/kgml/metabolic/ko.tar.gz` | network properties |
 
 ```
 $ curl --create-dirs -o kegg/genes/ko.tar.gz              "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
 $ curl --create-dirs -o kegg/ligand/compound.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
-$ curl --create-dirs -o kegg/ligand/glycan.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
+$ curl --create-dirs -o kegg/ligand/glycan.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/glycan.tar.gz"
 $ curl --create-dirs -o kegg/xml/kgml/metabolic/ko.tar.gz "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/xml/kgml/metabolic/ko.tar.gz"
 
 #Bash script
@@ -61,24 +92,23 @@ do
 done
 ```
 
-1. Ortholog details are retrieved by parsing `genes/ko/ko`.
-2. Compound details are retrieved by parsing `ligand/compound/compound` and `ligand/glycan/glycan`.
-3. Reaction details are retrieved by parsing `xml/kgml/metabolic/ko/<pathway>.xml` files
-
 ### Taxonomy
 
-this requires a prototype DB to be generated first, XC's taxon list doesnt have a taxid, I need to associate taxid with name.
+this requires a prototype DB to be generated first, (available script but not consolidated yet)
+XC's taxon list doesnt have a taxid, I need to associate taxid with name.
 
-redundancy in taxonomy, 
-option to just include things in archaea and bacteria
-
+TO-DO:
+[ ] deal with redundancy in taxonomy, 
+[ ] option to just include things in archaea and bacteria
 
 ### Relative Abundance
 
 
 ### Contig Data
 
-Requires the contigs to be provided in the following manner
+Requires the contigs to be provided in the following manner:
+contig:string:contigid, l:label [...optional Columns]
+
 
 #### Nodes
 
@@ -97,7 +127,7 @@ K00001:contig00015      1                1.05248506194796   46               1.0
 
 #### Edges
 
-contig2ko
+contig:string:contigid  ko:string:koid [... optional columns]
 ```
 contig:string:contigid  ko:string:koid
 K00001:contig00002      ko:K00001
@@ -112,19 +142,6 @@ K00001:contig00015      ko:K00001
 ```
 
 
-## Downloading latest database
-
-`USAGE: download.pl`
-
-## Usage
-
-```
-$ ./configure.pl --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
-make.pl
-
-eg. 
-$ ./configure.pl -d=taxonomy -d=contig -d=metabolism -kegg=/export2/home/uesu/KEGG/KEGG_SEPT_2014/ -c=out/miscDB
-```
 
 ## Prerequisites
 
@@ -149,10 +166,23 @@ If you’re building diamond on a older server please mail the author at wesley@
 
 ### R
 
-1. v3.1.1 is required
+1. > v3.1.1 is required
 
-2. Install dependencies using 
 
-# BUG
-* pathways include node `pathway pathway.name    pathway` which isnt suppose to be inside
-* non-metabolic pathways eg. 2-component system arent included. 
+### NEO4J
+
+#### From source
+Install [NEO4J](http://neo4j.com/download/)
+
+[tarball for neo4j community OSX/linux](http://info.neotechnology.com/download-thanks.html?edition=community&release=2.3.0-M01&flavour=unix&_ga=1.119121161.1401797244.1431421615)
+
+#### OSX - homebrew
+
+Install [Hombrew](http://brew.sh/)
+
+```
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ brew install neo4j
+```
+
+## Publication

@@ -30,9 +30,10 @@ my @specs = (
     Param  ("path|P|p")->default($ENV{"HOME"}),
     Param  ("projectName|N|n")->default("meta4j"),
     List   ("dataSets|d|D"),
-    Param  ("keggPath|K|k")->needs("dataSets"),
-    Param  ("contigPath|c|C")->needs("dataSets"),
+    Param  ("kegg|K|k")->needs("dataSets"),
+    Param  ("contig|c|C")->needs("dataSets"),
     List   ("memory|M|m"),
+    Param  ("threads|T|t")->default(1),
     Switch ("help|H|h")
 );
 
@@ -72,10 +73,10 @@ name of the folder storing all projects
 =item b<--neo4j -j -J>
 path to neo4j's batch importer
 
-=item b<--keggPath -k -K>
+=item b<--kegg -k -K>
 path to the kegg FTP
 
-=item b<--contigPath -c -C>
+=item b<--contig -c -C>
 path to folder containing nodes and relationships for contigs
 eg. contig2tax contig2ko
 
@@ -126,7 +127,7 @@ foreach my $dataset (@datasets)
 {
     if($dataset =~ m/metabolism/)
     {
-        my $keggftp = $opt->get_keggPath;
+        my $keggftp = $opt->get_kegg;
         &configureMetab($installdir, $keggftp);
         #Check if the files are ready if not ask user to download and come back again
         unless(-e "$keggftp/genes/ko/ko" & -e "$keggftp/ligand/compound/compound" & -e "$keggftp/ligand/glycan/glycan" & -e "$keggftp/xml/kgml/metabolic/ko.tar.gz")
@@ -137,7 +138,7 @@ foreach my $dataset (@datasets)
     }
     if($dataset =~ m/contig/)
     {
-        my $contigPath = $opt->get_contigPath;
+        my $contigPath = $opt->get_contig;
         system "cp $contigPath/nodes/* $installdir/out/nodes/";
         system "cp $contigPath/rels/* $installdir/out/rels/";
     }
@@ -173,7 +174,8 @@ sub configureMetab($installDIR, $keggFTP){
         say $makeMetabNew "targetdir=$installDIR"           if /^targetdir=/;
         say $makeMetabNew "keggdump=$keggFTP"               if /^keggdump=/;
         say $makeMetabNew "meta4jHome=$keggFTP"             if /^meta4jHome=/;
-        print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)/;
+        say $makeMetabNew "cores=1"                         if /^cores=/;
+        print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)|(^cores)/;
     }
 }
 

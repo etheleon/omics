@@ -3,11 +3,12 @@
 targetdir=$HOME/db/neo4j
 keggdump=$HOME/KEGG/KEGG_SEPT_2014
 meta4jHome=$HOME/downloads/meta4j
+cores="1"
 
 #Initial processing
 script/kegg/kegg.0100.ko_nodedetails.pl  $keggdump/genes/ko/ko > $targetdir/misc/ko_nodedetails
 script/kegg/kegg.0200.cpd_nodedetails.pl  $keggdump/ligand/compound/compound $keggdump/ligand/glycan/glycan > $targetdir/misc/cpd_nodedetails
-script/kegg/kegg.0300.import.r $keggdump $targetdir/misc
+script/kegg/kegg.0300.import.r $keggdump $targetdir/misc $cores
 cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 
 #################################################
@@ -28,7 +29,7 @@ perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newkonodes	#protects removes
 echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonodes	#empty field
 
 #Add in non-metabolic kos
-./script/kegg/kegg.0400.non-metabolic.pl
+./script/kegg/kegg.0400.non-metabolic.pl $targetdir
 
 #Prepare nodes (escape lucene (neo4j's query engine) metacharacters)
 #shd do this for all but lets just let it be first
