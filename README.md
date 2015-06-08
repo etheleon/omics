@@ -5,8 +5,10 @@ Meta4j
 
 **Meta4J** is a CLI tool for creation of a integrated `-omics` graph database used for data warehousing a integrated `-omics` microbial communities project.
 
-It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets. [Still in progress]
-*Currently supports the creation of a metabolic network integrated with KO data. 
+It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets.
+
+> Modularity - Still in progress
+> Currently supports the creation of a metabolic network integrated with KO data. 
 
 Meta4j was created to address issues surrounding the storage and integration of increasingly complexity in biological datasets of the following origins particularly in 
 relation to metabolism:
