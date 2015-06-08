@@ -49,11 +49,12 @@ $ git submodule update
 
 ```
 $ ./configure.pl --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
-make.pl
 
 eg. 
 $ ./configure.pl -d=taxonomy -d=contig -d=metabolism -k=/export2/home/uesu/KEGG/KEGG_SEPT_2014/ -c=out/miscDB
 ```
+
+Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
 
 ## Data Components
 
