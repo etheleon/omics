@@ -34,9 +34,9 @@ my @specs = (
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
     Param  ("threads|t")->default(1)->anycase(),
-    Switch ("ftp|f")->anycase()
+    Switch ("ftp|f"),
     Param  ("user|u")->needs("ftp")->anycase(),
-    Param  ("password|w")->need("ftp")->anycase(),
+    Param  ("password|w")->needs("ftp")->anycase(),
     Switch ("help|h")->anycase()
 );
 
@@ -51,44 +51,70 @@ $opt->validate({ requires => ['dataSets'] });
 
 =pod
 
-=head1 name
+=head1 NAME
 
  meta4j - constructing neo4j batch-import env
 
-=head1 synopsis
+=head1 SYNOPSIS
 
  perl configure.pl [options...]
 
-=head1 options
+=head1 OPTIONS
 
-=over 8
+=over 4
 
-=item b<--path -p -P>
-root dir to place base import files. default path is set to the $home/meta4j
+Compulsory Arguments
 
-=item b<--datasets -d -D>
+=item --datasets -d -D
+
 list of datasets used for this graphdb. for multiple datasets:
-eg. --datasets=taxonomy --datasets=readabundance --dataset=metabolism|<path to root dir of kegg>
+eg. --datasets=taxonomy --datasets=readabundance --dataset=metabolism --dataset=contig
 
-=item b<--projectName -n -N>
-name of the folder storing all projects
+Optional Arguments
 
-=item b<--neo4j -j -J>
-path to neo4j's batch importer
+=item --contig -c -C
 
-=item b<--kegg -k -K>
-path to the kegg FTP
-
-=item b<--contig -c -C>
 path to folder containing nodes and relationships for contigs
 eg. contig2tax contig2ko
 
-=item b<--help -h -H>
+=item --ftp -f
+
+Download neccessary kegg files
+
+=item --help -h -H
+
 help
+
+=item --kegg -k -K
+
+path to the kegg FTP
+
+=item --projectName -n -N
+
+name of the folder storing all projects
+
+
+=item --path -p -P
+
+root dir to place base import files. default path is set to the $home/meta4j
+
+=item --threads -t
+
+The number of threads to use when preparing the input files
+Used for the KEGG parsing
+
+=item --user -u
+
+username for keggFTP
+
+=item --password -w
+
+password for keggFTP
+
 
 =back
 
-=head1 description
+=head1 DESCRIPTION
 
 b<configure> sets up folder structure for use by makexx.sh files
 for data warehousing and analysis of meta-omics datasets
@@ -110,19 +136,24 @@ wesley@bic.nus.edu.sg
 
 =cut
 
-if ($opt->get_ftp){
-    my $username = $opt->get_user;
-    my $password = $opt->get_password;
-    my $keggPath = $opt->get_kegg;
-    map { system "curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_" } qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz);
-}
-
 # 1. create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;
     #root directory
     mkpath($installdir);
     #sub directories
     map { mkpath("$installdir/$_") } qw/out\/nodes out\/rels out\/database misc scripts/;
+
+if ($opt->get_ftp){
+    my $username = $opt->get_user;
+    my $password = $opt->get_password;
+    my $keggPath = $opt->get_kegg;
+    mkpath($keggPath);
+
+    map {
+        system "curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_";
+    } qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz);
+    system qq|find $keggPath -name "*.tar.gz" -execdir tar zxvf "{}" \\;|;
+}
 
 # 2. create batch.properties file
 my @datasets = $opt->get_dataSets;
