@@ -1,3 +1,0 @@
-[submodule "keggParser"]
-    path = script/kegg
-    url  = git@github.com:etheleon/keggParser.git
