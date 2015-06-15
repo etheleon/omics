@@ -63,14 +63,12 @@ $opt->validate({ requires => ['dataSets'] });
 
 =over 4
 
-Compulsory Arguments
 
-=item --datasets -d -D
+=item --datasets -d -D (Compulsory)
 
 list of datasets used for this graphdb. for multiple datasets:
 eg. --datasets=taxonomy --datasets=readabundance --dataset=metabolism --dataset=contig
 
-Optional Arguments
 
 =item --contig -c -C
 

@@ -63,3 +63,6 @@ do
 grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$ko = $F[0] if $.==1; push(@pathwayid, $F[4]); END{foreach $e (@pathwayid){print qq($ko\t$e\tpathwayed)}}' >> $targetdir/out/rels/ko2pathwayrels;
 done;
 perl -0777 -pi -e 'print qq(ko:string:koid\tpathway:string:pathwayid\trelationship\n)' $targetdir/out/rels/ko2pathwayrels
+script/kegg/kegg.0500.igraphMetabolism.r $targetdir/misc/
+
+
