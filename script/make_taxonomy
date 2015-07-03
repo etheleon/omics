@@ -4,6 +4,13 @@
 targetdir=$HOME/db/neo4j/out
 taxodump=$HOME/db/taxonomy
 
+if [ -f "$taxodump/nodes.dmp" ]
+then
+    echo "unzipping $taxodump/gi_taxid_prot.dmp.gz"
+    tar -zvxf $taxodump/tar.gz -C $taxodump
+fi
+
+
 #-- NODES
 #indexing::::propertyname:fieldtype:indexName##########
 #01::taxnodes##########################################
@@ -12,12 +19,14 @@ taxodump=$HOME/db/taxonomy
 #######################################################
 #stores rank into hash table and save into file:tempfile
 perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable} $tax2rank{$F[0]}=$F[2]; END{ store(\%tax2rank,q(tempfile)) }' $taxodump/nodes.dmp
+
 #reads the names
 perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile))}; print qq(taxid:int:ncbitaxid\tname\tl:label\t)} if (/scientific name/){$F[1] =~ s/[^a-zA-Z0-9 _-]//g;print qq($F[0]\t$F[1]\t$tax2rank{$F[0]},Taxon)}' $taxodump/names.dmp > $targetdir/nodes/tax_nodes
-echo -e '0\tUnclassified\tno rank,Taxon' >> $targetdir/nodes/tax_nodes	#this adds unclassified
 
-#####################################################################
-#-- EDGES
+echo -e '0\tUnclassified\tno rank,Taxon' >> $targetdir/nodes/tax_nodes  #this adds unclassified
+#######################################################
+
+# EDGES ---------------------------------------------------------#
 #01::taxid2taxid##################################################
 #taxid:int:ncbitaxid     taxid:int:ncbitaxid     relationship
 #1       1       child.of

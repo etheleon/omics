@@ -31,6 +31,7 @@ my @specs = (
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
     Param  ("kegg|k")->needs("dataSets")->anycase(),
+    Param  ("taxonomy|x")->needs("dataSets")->anycase(),
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
     Param  ("threads|t")->default(1)->anycase(),
@@ -58,6 +59,8 @@ $opt->validate({ requires => ['dataSets'] });
 =head1 SYNOPSIS
 
  perl configure.pl [options...]
+
+ example: configure.pl --path=/home/user/ --dataSets=contig --dataSets=metabolism --kegg=/home/user/newMeta4j --ftp --projectName=newMeta4j --user=<KEGGusername> --password=<KEGGpassword> --threads=10 --contig=/home/user/reDiamond/out/miscDB/
 
 =head1 OPTIONS
 
@@ -134,7 +137,7 @@ wesley@bic.nus.edu.sg
 
 =cut
 
-# 1. create directories
+# 1. Create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;
     #root directory
     mkpath($installdir);
@@ -153,7 +156,7 @@ if ($opt->get_ftp){
     system qq|find $keggPath -name "*.tar.gz" -execdir tar zxvf "{}" \\;|;
 }
 
-# 2. create batch.properties file
+# 2. Create batch.properties file
 my @datasets = $opt->get_dataSets;
 open my $config, ">", "$installdir/batch.properties";
 &writeBatch(\@datasets);
@@ -179,17 +182,24 @@ foreach my $dataset (@datasets)
         system "cp $contigPath/nodes/* $installdir/out/nodes/";
         system "cp $contigPath/rels/* $installdir/out/rels/";
     }
+    if($data =~ m/taxonomy/)
+    {
+        my $taxonPath = $opt->get_
+        system "$installdir/scripts/make_taxonomy.sh"
+    }
 }
 
 # 4 MAKE
 
 # Batch-Import
+# this step is very worrying
 system "curl -o $installdir/batch_importer_22.zip https://dl.dropboxusercontent.com/u/14493611/batch_importer_22.zip";
 system "unzip -d $installdir $installdir/batch_importer_22.zip";
 
 
 make($installdir);
 
+#Functions
 sub make($installDIR)
 {
     open my $makeDB, ">", "$installDIR/makeDB";
@@ -203,6 +213,15 @@ sub make($installDIR)
     say $makeDB qq(import.sh $output $allnodes $allrels);
 }
 
+sub configureTaxonomy($installDIR, $taxFTP){
+    open my $makeTax    , "<" , "script/make_taxonomy.sh";
+    open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh";
+    while(<$makeTax>){
+        say $makeTaxNew "targetdir=$installDIR"           if /^targetdir=/;
+        say $makeTaxNew "taxodump=$taxFTP"               if /^keggdump=/;
+        print $makeMetabNew $_                              unless /(^targetdir)|(^taxodump)/;
+    }
+}
 
 sub configureMetab($installDIR, $keggFTP){
     open my $makeMetab, "<", "script/make_metabolism.sh";
@@ -216,7 +235,6 @@ sub configureMetab($installDIR, $keggFTP){
     }
 }
 
-#Functions
 sub writeBatch($dataSets, @pro)
 {
     #Write Index
@@ -232,6 +250,7 @@ sub writeBatch($dataSets, @pro)
     #Wite others
     while(<DATA>){print $config $_ if !/^\#/}
 }
+
 
 __DATA__
 #Basic configurations
