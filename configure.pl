@@ -11,7 +11,7 @@ use Carp;
 
 #required use cpanfile
 use Modern::Perl '2015';
-use experimental qw/signatures postderef/;
+use experimental qw/signatures postderef smartmatch/;
 use Getopt::Lucid qw( :all );
 use autodie;
 
@@ -45,7 +45,14 @@ my $opt = Getopt::Lucid->getopt( \@specs );
 pod2usage(-verbose=>2) if $opt->get_help;
 
 $opt->validate({ requires => ['dataSets'] });
+my @datasets = $opt->get_dataSets;
+my @validDatasets = qw/taxonomy contig metabolism/;
 
+foreach (@datasets)
+{
+    lc $_ ~~ @validDatasets ? say "##\tincluding $_ dataset" : die "$_ is not a supported dataset\n";
+}
+@datasets = map {lc $_} @datasets;
 ##################################################
 #Documentation
 ##################################################
@@ -157,7 +164,7 @@ if ($opt->get_ftp){
 }
 
 # 2. Create batch.properties file
-my @datasets = $opt->get_dataSets;
+
 open my $config, ">", "$installdir/batch.properties";
 &writeBatch(\@datasets);
 
@@ -165,7 +172,7 @@ open my $config, ">", "$installdir/batch.properties";
 # metabolism
 foreach my $dataset (@datasets)
 {
-    if($dataset =~ m/metabolism/)
+    if($dataset =~ m/metabolism/i)
     {
         my $keggftp = $opt->get_kegg;
         &configureMetab($installdir, $keggftp);
@@ -176,16 +183,22 @@ foreach my $dataset (@datasets)
         }
         system "bash $installdir/scripts/make_metabolism.sh";
     }
-    if($dataset =~ m/contig/)
+    if($dataset =~ m/contig/i)
     {
         my $contigPath = $opt->get_contig;
         system "cp $contigPath/nodes/* $installdir/out/nodes/";
         system "cp $contigPath/rels/* $installdir/out/rels/";
     }
-    if($data =~ m/taxonomy/)
+    if($dataset =~ m/taxonomy/i)
     {
-        my $taxonPath = $opt->get_
-        system "$installdir/scripts/make_taxonomy.sh"
+        my $taxonPath = $opt->get_taxonomy;
+        &configureTaxonomy($installdir, $taxonPath);
+        #Check if the files are ready if not ask user to download and come back again
+        unless(-e "$taxonPath/taxdump.tar.gz")
+        {
+            croak "You do not have the necessary NCBI taxonomy files";
+        }
+        system "$installdir/scripts/make_taxonomy.sh";
     }
 }
 
@@ -218,8 +231,8 @@ sub configureTaxonomy($installDIR, $taxFTP){
     open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh";
     while(<$makeTax>){
         say $makeTaxNew "targetdir=$installDIR"           if /^targetdir=/;
-        say $makeTaxNew "taxodump=$taxFTP"               if /^keggdump=/;
-        print $makeMetabNew $_                              unless /(^targetdir)|(^taxodump)/;
+        say $makeTaxNew "taxodump=$taxFTP"               if /^taxodump=/;
+        print $makeTaxNew $_                              unless /(^targetdir)|(^taxodump)/;
     }
 }
 

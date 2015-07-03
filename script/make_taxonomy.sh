@@ -6,8 +6,8 @@ taxodump=$HOME/db/taxonomy
 
 if [ -f "$taxodump/nodes.dmp" ]
 then
-    echo "unzipping $taxodump/gi_taxid_prot.dmp.gz"
-    tar -zvxf $taxodump/tar.gz -C $taxodump
+    echo "unzipping $taxodump/taxdump.tar.gz"
+    tar -zvxf $taxodump/taxdump.tar.gz -C $taxodump
 fi
 
 
