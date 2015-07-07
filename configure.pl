@@ -30,11 +30,11 @@ my @specs = (
     Param  ("path|p")->default($ENV{"HOME"})->anycase(),
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
-    Param  ("kegg|k")->needs("dataSets")->anycase(),
+    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
     Param  ("taxonomy|x")->needs("dataSets")->anycase(),
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
-    Param  ("threads|t")->default(1)->anycase(),
+    Param  ("threads|t")->default(5)->anycase(),
     Switch ("ftp|f"),
     Param  ("user|u")->needs("ftp")->anycase(),
     Param  ("password|w")->needs("ftp")->anycase(),
@@ -67,7 +67,7 @@ foreach (@datasets)
 
  perl configure.pl [options...]
 
- example: configure.pl --path=/home/user/ --dataSets=contig --dataSets=metabolism --kegg=/home/user/newMeta4j --ftp --projectName=newMeta4j --user=<KEGGusername> --password=<KEGGpassword> --threads=10 --contig=/home/user/reDiamond/out/miscDB/
+ example: configure.pl --dataSets=contig --dataSets=metabolism --dataSets=taxonomy- --threads=10 --contig=/home/user/reDiamond/out/miscDB/
 
 =head1 OPTIONS
 
@@ -157,10 +157,10 @@ if ($opt->get_ftp){
     my $keggPath = $opt->get_kegg;
     mkpath($keggPath);
 
-    map {
+    foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
         system "curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_";
-    } qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz);
-    system qq|find $keggPath -name "*.tar.gz" -execdir tar zxvf "{}" \\;|;
+    };
+    system qq|find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;|;
 }
 
 # 2. Create batch.properties file
@@ -198,7 +198,7 @@ foreach my $dataset (@datasets)
         {
             croak "You do not have the necessary NCBI taxonomy files";
         }
-        system "$installdir/scripts/make_taxonomy.sh";
+        system "bash $installdir/scripts/make_taxonomy.sh";
     }
 }
 
@@ -208,7 +208,6 @@ foreach my $dataset (@datasets)
 # this step is very worrying
 system "curl -o $installdir/batch_importer_22.zip https://dl.dropboxusercontent.com/u/14493611/batch_importer_22.zip";
 system "unzip -d $installdir $installdir/batch_importer_22.zip";
-
 
 make($installdir);
 
@@ -223,7 +222,7 @@ sub make($installDIR)
     #Not using the mvn
 #    say $makeDB qq(mvn clean compile exec:java -Dexec.mainClass="org.neo4j.batchimport.Importer" -Dexec.args="'$batchproperties' '$output' '$allnodes' '$allrels'");
 #    #Binary
-    say $makeDB qq(import.sh $output $allnodes $allrels);
+    say $makeDB qq(./import.sh $output $allnodes $allrels);
 }
 
 sub configureTaxonomy($installDIR, $taxFTP){
@@ -239,6 +238,7 @@ sub configureTaxonomy($installDIR, $taxFTP){
 sub configureMetab($installDIR, $keggFTP){
     open my $makeMetab, "<", "script/make_metabolism.sh";
     open my $makeMetabNew, ">", "$installDIR/scripts/make_metabolism.sh";
+
     while(<$makeMetab>){
         say $makeMetabNew "targetdir=$installDIR"           if /^targetdir=/;
         say $makeMetabNew "keggdump=$keggFTP"               if /^keggdump=/;
@@ -246,6 +246,7 @@ sub configureMetab($installDIR, $keggFTP){
         say $makeMetabNew "cores=1"                         if /^cores=/;
         print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)|(^cores)/;
     }
+
 }
 
 sub writeBatch($dataSets, @pro)
