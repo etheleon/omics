@@ -34,7 +34,7 @@ my @specs = (
     Param  ("taxonomy|x")->needs("dataSets")->anycase(),
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
-    Param  ("threads|t")->default(5)->anycase(),
+    Param  ("threads|t")->default(1)->anycase(),
     Switch ("ftp|f"),
     Param  ("user|u")->needs("ftp")->anycase(),
     Param  ("password|w")->needs("ftp")->anycase(),
@@ -53,6 +53,7 @@ foreach (@datasets)
     lc $_ ~~ @validDatasets ? say "##\tincluding $_ dataset" : die "$_ is not a supported dataset\n";
 }
 @datasets = map {lc $_} @datasets;
+
 ##################################################
 #Documentation
 ##################################################
@@ -73,43 +74,42 @@ foreach (@datasets)
 
 =over 4
 
+=item --projectName -n -N
+
+name of the folder storing all projects
+
+=item --path -p -P
+
+root dir to place base import files (excluding the projectName). default path is set to the $home/meta4j
+
+=item --threads -t
+
+The number of threads to use when preparing the input files
+default is 1;
+Used for the KEGG parsing
 
 =item --datasets -d -D (Compulsory)
 
 list of datasets used for this graphdb. for multiple datasets:
-eg. --datasets=taxonomy --datasets=readabundance --dataset=metabolism --dataset=contig
+eg. --datasets=taxonomy --datasets=readabundance (not ready) --dataset=metabolism --dataset=contig
 
+=item --taxonomy -x -X
+
+path pointing to NBCI taxonomy
+uses to files: 1. nodes.dmp and 2. names.dmp
 
 =item --contig -c -C
 
 path to folder containing nodes and relationships for contigs
 eg. contig2tax contig2ko
 
+=item --kegg -k -K
+
+path to download kegg files to. EG. if --path=/home/user --projectname=meta4j then --kegg=/home/user/meta4j
+
 =item --ftp -f
 
 Download neccessary kegg files
-
-=item --help -h -H
-
-help
-
-=item --kegg -k -K
-
-path to the kegg FTP
-
-=item --projectName -n -N
-
-name of the folder storing all projects
-
-
-=item --path -p -P
-
-root dir to place base import files. default path is set to the $home/meta4j
-
-=item --threads -t
-
-The number of threads to use when preparing the input files
-Used for the KEGG parsing
 
 =item --user -u
 
@@ -119,6 +119,9 @@ username for keggFTP
 
 password for keggFTP
 
+=item --help -h -H
+
+help
 
 =back
 
