@@ -5,26 +5,28 @@ Meta4j
 
 **Meta4J** is a CLI tool for creation of a integrated `-omics` graph database used for data warehousing a integrated `-omics` microbial communities project.
 
-It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets.
+It is designed to be modular, from simple projects involving only genomics data to multiple `-omics` datasets. It aims to integrate with existing databases for annotation cross refering (metadata)
 
 > Modularity - Still in progress
 > Currently supports the creation of a metabolic network integrated with KO data. 
 
-Meta4j was created to address issues surrounding the storage and integration of increasingly complexity in biological datasets of the following origins particularly in 
-relation to metabolism:
+## Origin
 
-* Genomics
-* Transcriptomics
-* Metabolomics
-* Proteomics
-* Lipidomics
+Meta4j was created by Wesley in the course of his PhD to address issues surrounding the storage and integration of -omics datasets and accompanying metadata databases Facilitating the interrogration of highly nested biological questions.
 
-Meta4j serves as a customized database for the series of analytic tools designed by Wesley **GOI**, Chao **XIE** and Peter **LITTLE**. 
+Further design of analytic tools are designed by Wesley **GOI**, Chao **XIE** and Peter **LITTLE**. 
 
-## General
+## Purpose
+
+Meta4j aims to be a highly customizable database for researchers to store and query interconnected data. 
+
+## Installation
 
 ![workflow](./workflow.png)
 
+
+Before attempting to prepare your own customized version of the Meta4j database please take time to install the necessary dependencies. (See Dependencies section).
+ 
 Scripts are organised into 2 categories:
 
 1. The generation of tables files `relationships` and `nodes` for batch insertion into Neo4j graph database. Found in the `script` folder
@@ -50,13 +52,12 @@ $ git submodule update
 ## Usage
 
 ```
-$ ./configure.pl --kegg=<path/to/keggDB/> --ncbiTaxonomy=<path/to/ncbi/taxonomy>
-
 eg. 
-$ ./configure.pl -d=taxonomy -d=contig -d=metabolism -k=/export2/home/uesu/KEGG/KEGG_SEPT_2014/ -c=out/miscDB
+$ ./configure.pl --dataSet=taxonomy --dataSet=contig --dataSet=metabolism -c=out/miscDB -ftp --user=<keggFTP username> --password=<keggFTP password>
 ```
 
 Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
+
 
 ## Data Components
 
@@ -79,20 +80,6 @@ from the KEGG database (use the following commands to download the necessary fil
 |`/kegg/ligand/compound.tar.gz` | Ligand:CPD details| 
 |`/kegg/ligand/glycan.tar.gz` | Ligand:GLY details |
 |`/kegg/xml/kgml/metabolic/ko.tar.gz` | network properties |
-
-```
-$ curl --create-dirs -o kegg/genes/ko.tar.gz              "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/genes/ko.tar.gz"
-$ curl --create-dirs -o kegg/ligand/compound.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/compound.tar.gz"
-$ curl --create-dirs -o kegg/ligand/glycan.tar.gz       "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/ligand/glycan.tar.gz"
-$ curl --create-dirs -o kegg/xml/kgml/metabolic/ko.tar.gz "ftp://<user>:<password>@ftp.bioinformatics.jp/kegg/xml/kgml/metabolic/ko.tar.gz"
-
-#Bash script
-array=( "kegg/genes/ko.tar.gz" "kegg/ligand/compound.tar.gz" "kegg/ligand/glycan.tar.gz" "kegg/xml/kgml/metabolic/ko.tar.gz")
-for i in "${array[@]}"
-do
-   curl --create-dirs -o $i ftp://<user>:<password>@ftp.bioinformatics.jp/$i
-done
-```
 
 ### Taxonomy
 
@@ -156,11 +143,13 @@ Using `linuxbrew` is highly recommended for either rapsearch2 or diamond
 
 If you’re building diamond on a older server please mail the author at wesley@bic.nus.edu.sg for the binary.
 
+## Dependencies
+
 ### Perl
 
-1. v5.20.2 is required: 
-   Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install local perl 
-   and **CPANMINUS**, a perl package manager with `curl -L https://cpanmin.us | perl - App::cpanminus` 
+1. Local Perl
+   Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install a local version of perl (==v5.21.0)
+   and **CPANMINUS** using `$ plenv install-cpanm`
 
 2. Install dependencies
     * Install Carton using `$ cpanm Carton`.
@@ -173,18 +162,26 @@ If you’re building diamond on a older server please mail the author at wesley@
 
 ### NEO4J
 
-#### From source
+#### Settings
+
+##### Security (Username, password)
+
+Newer versions of NEO4J have their security turn on by default
+
+##### Access
+uncomment access to allow query from IP addresses asigned from 127.0.0.1 otherwise known as localhost
+
+#### Installation 
+
+##### Linux
 Install [NEO4J](http://neo4j.com/download/)
 
 [tarball for neo4j community OSX/linux](http://info.neotechnology.com/download-thanks.html?edition=community&release=2.3.0-M01&flavour=unix&_ga=1.119121161.1401797244.1431421615)
 
-#### OSX - homebrew
+#### OSX
 
-Install [Hombrew](http://brew.sh/)
-
-```
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-$ brew install neo4j
-```
+Install community version `dmg` [link](http://neo4j.com/download/). 
+*may need a separate neo4j.server.properties file to point to. 
 
 ## Publication
+(not published yet)
