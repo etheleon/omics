@@ -25,8 +25,8 @@ my $keyStore =
 ##################################################
 #Arguments
 ##################################################
-
-my @specs = (
+my $opt = Getopt::Lucid->getopt(
+[
     Param  ("path|p")->default($ENV{"HOME"})->anycase(),
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
@@ -39,9 +39,8 @@ my @specs = (
     Param  ("user|u")->needs("ftp")->anycase(),
     Param  ("password|w")->needs("ftp")->anycase(),
     Switch ("help|h")->anycase()
-);
+]);
 
-my $opt = Getopt::Lucid->getopt( \@specs );
 pod2usage(-verbose=>2) if $opt->get_help;
 
 $opt->validate({ requires => ['dataSets'] });

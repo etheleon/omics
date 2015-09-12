@@ -148,12 +148,30 @@ If you’re building diamond on a older server please mail the author at wesley@
 ### Perl
 
 1. Local Perl
-   Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install a local version of perl (==v5.21.0)
+    * Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install a local version of perl (==v5.21.0)
    and **CPANMINUS** using `$ plenv install-cpanm`
+
+    * If you already only need to install cpanminus, `cpanm`, (taken from, [stackoverflow: How can I use CPAN as a non-root user?](http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user)
+
+```
+curl http://cpanmin.us | perl - -l ~/perl5 App::cpanminus local::lib
+eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib`
+echo 'eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib`' >> ~/.bash_profile
+echo 'export MANPATH=$HOME/perl5/man:$MANPATH' >> ~/.bash_profile
+```
 
 2. Install dependencies
     * Install Carton using `$ cpanm Carton`.
     * run `carton` in package’s root directory
+
+```
+$ plenv install 5.21.0
+$ plenv install cpanm
+$ plenv global 5.21.0
+
+$ cd <omics repo>
+$ carton
+```
 
 ### R
 

@@ -21,11 +21,26 @@ rm $targetdir/out/nodes/newkonodes
 
 for i in `perl -aln -F"\t" -e 'print $F[0]' $targetdir/misc/*_konodes | sort | uniq | tail -r | tail -n +2 | tail -r`	#For each ko
 do
-grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]);END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
+    grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]);END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
 done;
+perl -MAUTODIE -E '
+BEGIN{
+    open METABKOS, "<", "$ARGV[0]/out/nodes/newkonodes";
+    while(<METABKOS>){$kos{(split /\t/)[0]}++ unless $. == 1};
+    open METABNODES, ">>", "$ARGV[0]/out/nodes/newkonodes"
+    open NONMETABS, "<", "$ARGV[0]/misc/ko_nodedetails";
+}
+while(<NONMETABS>){
+    chomp;
+    say join "$_\tko" unless exists $kos{(split /\t/)[0]}
+}' $targetdir
+
+
 
 perl -0777 -pi -E '@header = qw/ko:string:koid name definition l:label pathway:string_array pathway.name:string_array/; say(join("\t", @header))' $targetdir/out/nodes/newkonodes #prints the header
 perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newkonodes	#protects removes
+
+#need to add all non-metabolic KOs
 echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonodes	#empty field
 
 #Add in non-metabolic kos
