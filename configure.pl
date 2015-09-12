@@ -30,7 +30,7 @@ my $opt = Getopt::Lucid->getopt(
     Param  ("path|p")->default($ENV{"HOME"})->anycase(),
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
-    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
+#    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
     Param  ("taxonomy|x")->needs("dataSets")->anycase(),
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
@@ -104,7 +104,7 @@ eg. contig2tax contig2ko
 
 =item --kegg -k -K
 
-path to download kegg files to. EG. if --path=/home/user --projectname=meta4j then --kegg=/home/user/meta4j
+path to download kegg files if not using FTP EG. if --path=/home/user --projectname=meta4j then --kegg=/home/user/meta4j
 
 =item --ftp -f
 
@@ -156,7 +156,9 @@ my $installdir = join "/", $opt->get_path, $opt->get_projectName;
 if ($opt->get_ftp){
     my $username = $opt->get_user;
     my $password = $opt->get_password;
-    my $keggPath = $opt->get_kegg;
+
+    #my $keggPath = $opt->get_kegg;
+    my $keggPath = $installdir;
     mkpath($keggPath);
 
     foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
