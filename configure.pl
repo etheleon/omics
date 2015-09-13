@@ -9,11 +9,15 @@ use File::Path;
 use File::Fetch;
 use Carp;
 
+if ($#ARGV == -1){pod2usage(-verbose=>2)}
+
+
 #required use cpanfile
 use Modern::Perl '2015';
 use experimental qw/signatures postderef smartmatch/;
 use Getopt::Lucid qw( :all );
 use autodie;
+
 
 my $keyStore =
 {
@@ -41,7 +45,7 @@ my $opt = Getopt::Lucid->getopt(
     Switch ("help|h")->anycase()
 ]);
 
-pod2usage(-verbose=>2) if $opt->get_help;
+pod2usage(-verbose=>2) if $opt->get_help ;
 
 $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
