@@ -19,7 +19,7 @@ cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 #' combines redundant ko entries into one with pathways as arrays 
 rm $targetdir/out/nodes/newkonodes
 
-for i in `perl -aln -F"\t" -e 'print $F[0]' $targetdir/misc/*_konodes | sort | uniq | tail -r | tail -n +2 | tail -r`	#For each ko
+for i in `perl -aln -F"\t" -e 'print $F[0] unless m/ko:string:koid/' $targetdir/misc/*_konodes | sort | uniq`	#For each ko
 do
     grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]);END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
 done;
@@ -73,7 +73,7 @@ perl -ne 'BEGIN{print qq(cpd:string:cpdid\tko:string:koid\trelationship\trxnID\n
 
 ##-- pathway2KO
 rm $targetdir/out/rels/ko2pathwayrels
-for i in `perl -aln -F"\t" -e 'print $F[0]' $targetdir/misc/*_konodes | sort | uniq | tail -r | tail -n +2 | tail -r`
+for i in `perl -aln -F"\t" -e 'print $F[0] unless m/ko:string:koid/' $targetdir/misc/*_konodes | sort | uniq`
 do
 grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$ko = $F[0] if $.==1; push(@pathwayid, $F[4]); END{foreach $e (@pathwayid){print qq($ko\t$e\tpathwayed)}}' >> $targetdir/out/rels/ko2pathwayrels;
 done;

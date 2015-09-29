@@ -11,7 +11,6 @@ use Carp;
 
 if ($#ARGV == -1){pod2usage(-verbose=>2)}
 
-
 #required use cpanfile
 use Modern::Perl '2015';
 use experimental qw/signatures postderef smartmatch/;
@@ -34,7 +33,7 @@ my $opt = Getopt::Lucid->getopt(
     Param  ("path|p")->default($ENV{"HOME"})->anycase(),
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
-#    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
+    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
     Param  ("taxonomy|x")->needs("dataSets")->anycase(),
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
@@ -45,7 +44,7 @@ my $opt = Getopt::Lucid->getopt(
     Switch ("help|h")->anycase()
 ]);
 
-pod2usage(-verbose=>2) if $opt->get_help ;
+pod2usage(-verbose=>2) if $opt->get_help
 
 $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
@@ -71,7 +70,7 @@ foreach (@datasets)
 
  perl configure.pl [options...]
 
- example: configure.pl --dataSets=contig --dataSets=metabolism --dataSets=taxonomy- --threads=10 --contig=/home/user/reDiamond/out/miscDB/
+ example: configure.pl --dataSets=contig --dataSets=metabolism --dataSets=taxonomy --threads=10 --contig=/home/user/reDiamond/out/miscDB/ --kegg=/path/to/kegg/ftp --taxonomy=/path/to/db/taxonomy_12sept2014/
 
 =head1 OPTIONS
 

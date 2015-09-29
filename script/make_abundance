@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
-library(RCurl)
-library(RJSONIO)
-library(dplyr)
+suppressMessages(library(RCurl))
+suppressMessages(library(RJSONIO))
+suppressMessages(library(dplyr))
 
 load("~/abu_genes/data/Abundance_Function/mRNA.1000.genus.rda")
 load("~/abu_genes/data/Abundance_Function/g454.1000.genus.rda")
