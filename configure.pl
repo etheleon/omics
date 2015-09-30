@@ -9,14 +9,17 @@ use File::Path;
 use File::Fetch;
 use Carp;
 
-if ($#ARGV == -1){pod2usage(-verbose=>2)}
+if ($#ARGV == -1){pod2usage(
+        -message=>"no arguments detected",
+        -verbose=>2,
+        -output=>\*STDOUT
+    )}
 
 #required use cpanfile
 use Modern::Perl '2015';
 use experimental qw/signatures postderef smartmatch/;
 use Getopt::Lucid qw( :all );
 use autodie;
-
 
 my $keyStore =
 {
@@ -150,25 +153,12 @@ wesley@bic.nus.edu.sg
 =cut
 
 # 1. Create directories
-my $installdir = join "/", $opt->get_path, $opt->get_projectName;
+    my $installdir = join "/", $opt->get_path, $opt->get_projectName;
     #root directory
     mkpath($installdir);
     #sub directories
-    map { mkpath("$installdir/$_") } qw/out\/nodes out\/rels out\/database misc scripts/;
+    mkpath("$installdir/$_") foreach qw/out\/nodes out\/rels out\/database misc scripts/;
 
-if ($opt->get_ftp){
-    my $username = $opt->get_user;
-    my $password = $opt->get_password;
-
-    #my $keggPath = $opt->get_kegg;
-    my $keggPath = $installdir;
-    mkpath($keggPath);
-
-    foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
-        system "curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_";
-    };
-    system qq|find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;|;
-}
 
 # 2. Create batch.properties file
 
@@ -181,10 +171,27 @@ foreach my $dataset (@datasets)
 {
     if($dataset =~ m/metabolism/i)
     {
-        my $keggftp = $opt->get_kegg;
-        &configureMetab($installdir, $keggftp);
+        my $keggPath;
+        if ($opt->get_ftp){
+            my $username = $opt->get_user;
+            my $password = $opt->get_password;
+
+            #my $keggPath = $opt->get_kegg;
+            $keggPath = $installdir;
+            mkpath($keggPath);
+
+            foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
+                say "Downloading $_";
+                `curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_`;
+            };
+                `find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;`;
+        }else{
+            $keggPath = $opt->get_kegg;
+        }
+
+        &configureMetab($installdir, $keggPath);
         #Check if the files are ready if not ask user to download and come back again
-        unless(-e "$keggftp/genes/ko/ko" & -e "$keggftp/ligand/compound/compound" & -e "$keggftp/ligand/glycan/glycan" & -e "$keggftp/xml/kgml/metabolic/ko.tar.gz")
+        unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz")
         {
             croak "You do not have the necessary KEGG files";
         }
@@ -213,8 +220,8 @@ foreach my $dataset (@datasets)
 
 # Batch-Import
 # this step is very worrying
-system "curl -o $installdir/batch_importer_22.zip https://dl.dropboxusercontent.com/u/14493611/batch_importer_22.zip";
-system "unzip -d $installdir $installdir/batch_importer_22.zip";
+`curl -o $installdir/batch_importer_22.zip https://dl.dropboxusercontent.com/u/14493611/batch_importer_22.zip`;
+`unzip -d $installdir $installdir/batch_importer_22.zip`;
 
 make($installdir);
 
