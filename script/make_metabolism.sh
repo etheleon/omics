@@ -23,19 +23,8 @@ for i in `perl -aln -F"\t" -e 'print $F[0] unless m/ko:string:koid/' $targetdir/
 do
     grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]);END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
 done;
-perl -MAUTODIE -E '
-BEGIN{
-    open METABKOS, "<", "$ARGV[0]/out/nodes/newkonodes";
-    while(<METABKOS>){$kos{(split /\t/)[0]}++ unless $. == 1};
-    open METABNODES, ">>", "$ARGV[0]/out/nodes/newkonodes"
-    open NONMETABS, "<", "$ARGV[0]/misc/ko_nodedetails";
-}
-while(<NONMETABS>){
-    chomp;
-    say join "$_\tko" unless exists $kos{(split /\t/)[0]}
-}' $targetdir
 
-
+perl -Mautodie -E 'BEGIN{open METABKOS, "<", "$ARGV[0]/out/nodes/newkonodes";while(<METABKOS>){$kos{(split /\t/)[0]}++ unless $. == 1};open METABNODES, ">>", "$ARGV[0]/out/nodes/newkonodes";open NONMETABS, "<", "$ARGV[0]/misc/ko_nodedetails";}while(<NONMETABS>){chomp;say join "$_\tko" unless exists $kos{(split /\t/)[0]}}' $targetdir
 
 perl -0777 -pi -E '@header = qw/ko:string:koid name definition l:label pathway:string_array pathway.name:string_array/; say(join("\t", @header))' $targetdir/out/nodes/newkonodes #prints the header
 perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newkonodes	#protects removes
