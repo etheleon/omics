@@ -27,6 +27,7 @@ my $keyStore =
     metabolism  => ["koid","cpdid","pathwayid"],
     contig      => ["contigid"]
 };
+my @validDatasets = qw/taxonomy contig metabolism/;
 
 ##################################################
 #Arguments
@@ -51,7 +52,6 @@ pod2usage(-verbose=>2) if $opt->get_help;
 
 $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
-my @validDatasets = qw/taxonomy contig metabolism/;
 
 foreach (@datasets)
 {
@@ -162,8 +162,7 @@ wesley@bic.nus.edu.sg
 
 # 2. Create batch.properties file
 
-open my $config, ">", "$installdir/batch.properties";
-&writeBatch(\@datasets);
+&writeBatch($installdir, \@datasets);
 
 # 3 configure makeXX.sh files
 # metabolism
@@ -176,10 +175,7 @@ foreach my $dataset (@datasets)
             my $username = $opt->get_user;
             my $password = $opt->get_password;
 
-            #my $keggPath = $opt->get_kegg;
             $keggPath = $installdir;
-            mkpath($keggPath);
-
             foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
                 say "Downloading $_";
                 `curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_`;
@@ -263,8 +259,9 @@ sub configureMetab($installDIR, $keggFTP){
 
 }
 
-sub writeBatch($dataSets, @pro)
+sub writeBatch($installdir, $dataSets, @pro)
 {
+    open my $config, ">", "$installdir/batch.properties";
     #Write Index
     foreach my $dataset ($dataSets->@*)
     {
