@@ -44,7 +44,7 @@ my $opt = Getopt::Lucid->getopt(
     Switch ("help|h")->anycase()
 ]);
 
-pod2usage(-verbose=>2) if $opt->get_help
+pod2usage(-verbose=>2) if $opt->get_help;
 
 $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
