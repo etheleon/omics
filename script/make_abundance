@@ -15,15 +15,20 @@ taxa = unique(genus$taxon)
 cypherurl = "192.168.100.1:7474/db/data/cypher"
 #cypherurl = "localhost:7474/db/data/cypher"
 
-query="MATCH (genus:genus)
-WHERE genus.name = {taxaname}
-WITH genus
+query="
+MATCH 
+    (genus:genus)
+WHERE 
+    genus.name = {taxaname}
+WITH 
+    genus
 MATCH
- path=genus-[:childof*]->(king:superkingdom)
+    path=genus-[:childof*]->(king:superkingdom)
 RETURN
  genus.name as NAME,
  genus.taxid as TAXID,
- last(extract(n in nodes(path)| n.name)) AS SUPERKINGDOM"
+ last(extract(n in nodes(path)| n.name)) AS SUPERKINGDOM
+"
 
 taxid.df=do.call(rbind,lapply(as.character(taxa), function(taxon) { 
 post = toJSON(list(query = query, params = list(taxaname= taxon)))
