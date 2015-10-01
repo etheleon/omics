@@ -79,7 +79,7 @@ foreach my $dataset (@datasets)
             my $password = $opt->get_password;
 
             $keggPath = $installdir;
-            foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz)) {
+            foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz, module/module.tar.gz)) {
                 say "Downloading $_";
                 `curl --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_`;
             };

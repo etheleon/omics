@@ -9,6 +9,7 @@ cores="1"
 script/kegg/kegg.0100.ko_nodedetails.pl  $keggdump/genes/ko/ko > $targetdir/misc/ko_nodedetails
 script/kegg/kegg.0200.cpd_nodedetails.pl  $keggdump/ligand/compound/compound $keggdump/ligand/glycan/glycan > $targetdir/misc/cpd_nodedetails
 script/kegg/kegg.0300.import.r $keggdump $targetdir/misc $cores
+script/kegg/kegg.0600.modules.pl $keggdump/module/module $targetdir/out/nodes/modulesNodes $targetdir/out/rels/module2ko
 cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 
 #################################################
@@ -41,6 +42,8 @@ perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/ unless $. == 1' 
 #perl -0777 -pi -e 'print qq(ko:string:koid\tname\tdefinition\tl:label\tpathway:string_array\tpathway.name:string_array\n)' nodes/newkonodes
 
 
+#Add in modules
+
 #--CPD
 rm -f $targetdir/misc/newcpdnodes
 cat $targetdir/misc/*_cpdnodes |perl -ne 'print unless /cpd\:string\:cpdid/' | sort | uniq >> $targetdir/out/nodes/newcpdnodes	#removes redundancy
@@ -68,5 +71,3 @@ grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$k
 done;
 perl -0777 -pi -e 'print qq(ko:string:koid\tpathway:string:pathwayid\trelationship\n)' $targetdir/out/rels/ko2pathwayrels
 script/kegg/kegg.0500.igraphMetabolism.r $targetdir/misc/
-
-
