@@ -20,6 +20,7 @@ use Modern::Perl '2015';
 use experimental qw/signatures postderef smartmatch/;
 use Getopt::Lucid qw( :all );
 use autodie;
+use File::Which;
 
 my $keyStore =
 {
@@ -28,6 +29,7 @@ my $keyStore =
     contig      => ["contigid"]
 };
 
+#testing
 ##################################################
 #Arguments
 ##################################################
@@ -44,6 +46,7 @@ my $opt = Getopt::Lucid->getopt(
     Switch ("ftp|f"),
     Param  ("user|u")->needs("ftp")->anycase(),
     Param  ("password|w")->needs("ftp")->anycase(),
+    Param  ("neo4jimport|j")->anycase(),
     Switch ("help|h")->anycase()
 ]);
 
@@ -53,8 +56,15 @@ $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
 @datasets = map {lc $_} @datasets;
 
-my @possible = (keys %{$keyStore});
+my $neo4j = $opt->get_neo4jimport;
+unless(defined $neo4j)
+{
+    my $path = which "neo4j-import";
+    defined $path ? $neo4j = "neo4j-import" : croak "neo4j-import not found. Please add to path";
+}
 
+
+my @possible = (keys %{$keyStore});
 foreach (@datasets)
 {
     say $_;
@@ -65,10 +75,6 @@ foreach (@datasets)
 # 1. Create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;
 &mkpath($_) for ($installdir, map {"$installdir/$_"}  qw/out\/nodes out\/rels out\/database misc scripts/);
-
-# 2. Create batch.properties file
-
-&writeBatch($installdir, \@datasets);
 
 # 3 configure makeXX.sh files
 
@@ -119,27 +125,24 @@ foreach my $dataset (@datasets)
     }
 }
 
-# 4 MAKE
-
 # Batch-Import
-# this step is very worrying
-system "curl --progress-bar -o $installdir/batch_importer_22.zip https://dl.dropboxusercontent.com/u/14493611/batch_importer_22.zip";
-system "unzip -d $installdir $installdir/batch_importer_22.zip";
-
 make($installdir);
 
 #Functions
-sub make($installDIR)
+sub make($installDIR, $neo4j)
 {
-    open my $makeDB, ">", "$installDIR/makeDB";
     my $time = strftime("%d%b%Y-%H%M", localtime);
-    my $output          = "$installDIR/out/database/$time"."_altimit.db";
-    my $allnodes        = join ",",<$installDIR/out/nodes/*>;
-    my $allrels         = join ",",<$installDIR/out/rels/*>;
-    #Not using the mvn
-#    say $makeDB qq(mvn clean compile exec:java -Dexec.mainClass="org.neo4j.batchimport.Importer" -Dexec.args="'$batchproperties' '$output' '$allnodes' '$allrels'");
-#    #Binary
-    say $makeDB qq(./import.sh $output $allnodes $allrels);
+    my $output          = "$installDIR/out/database/$time".".db";
+
+#    my $allnodes        = join ",",<$installDIR/out/nodes/*>;
+#    my $allrels         = join ",",<$installDIR/out/rels/*>;
+
+
+    my $nodesIMPORT = join " ", map { "--nodes $_" } <$installDIR/out/nodes/*>;
+    my $edgesIMPORT = join " ", map { "--relationships $_" } <$installDIR/out/nodes/*>;
+
+    my $finalCMD = "$neo4j --into $output $nodesIMPORT $edgesIMPORT";
+    say $finalCMD;
 }
 
 sub configureTaxonomy($installDIR, $taxFTP){
@@ -147,7 +150,7 @@ sub configureTaxonomy($installDIR, $taxFTP){
     open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh";
     while(<$makeTax>){
         say $makeTaxNew "targetdir=$installDIR"           if /^targetdir=/;
-        say $makeTaxNew "taxodump=$taxFTP"               if /^taxodump=/;
+        say $makeTaxNew "taxodump=$taxFTP"                if /^taxodump=/;
         print $makeTaxNew $_                              unless /(^targetdir)|(^taxodump)/;
     }
 }
@@ -164,23 +167,6 @@ sub configureMetab($installDIR, $keggFTP){
         print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)|(^cores)/;
     }
 
-}
-
-sub writeBatch($installdir, $dataSets, @pro)
-{
-    open my $config, ">", "$installdir/batch.properties";
-    #Write Index
-    foreach my $dataset ($dataSets->@*)
-    {
-        $dataset = (split /\|/, $dataset)[0];
-        my $isSpecified = exists $keyStore->{$dataset};
-        if($isSpecified)
-        {
-            say $config "batch_import.node_index.$_=exact" for $keyStore->{$dataset}->@*
-        }
-    }
-    #Wite others
-    while(<DATA>){print $config $_ if !/^\#/}
 }
 
 ##################################################
@@ -216,6 +202,10 @@ root dir to place base import files (excluding the projectName). default path is
 The number of threads to use when preparing the input files
 default is 1;
 Used for the KEGG parsing
+
+=item --neo4jimport -j
+
+The path to the neo4j-import executable
 
 =item --datasets -d -D (Compulsory)
 
@@ -276,33 +266,3 @@ wesley@bic.nus.edu.sg
 
 =cut
 
-__DATA__
-#Basic configurations
-
-#Print out the effective Neo4j configuration after startup
-dump_configuration                                 = false
-
-#The type of cache to use for nodes and relationships, one of [weak, soft, none]
-#See documentation for further details:
-#   http://neo4j.com/docs/stable/configuration-caches.html#_object_cache
-cache_type                                         = none
-use_memory_mapped_buffers                          = true
-
-#Indexes - Full list
-# batch_import.node_index.koid                       = exact
-# batch_import.node_index.cpdid                      = exact
-# batch_import.node_index.pathwayid                  = exact
-# batch_import.node_index.ncbitaxid                  = exact
-# batch_import.node_index.readID                     = exact
-# batch_import.node_index.contigid                   = exact
-
-#Total memory ~ this configuration can proivde more 1Gb
-neostore.propertystore.db.index.keys.mapped_memory = 5M
-neostore.propertystore.db.index.mapped_memory      = 5M
-neostore.propertystore.db.mapped_memory            = 200M
-neostore.propertystore.db.strings.mapped_memory    = 200M
-
-neostore.nodestore.db.mapped_memory                = 200M
-neostore.relationshipstore.db.mapped_memory        = 500M
-
-batch_array_separator                              = \\|
