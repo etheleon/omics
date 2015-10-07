@@ -66,7 +66,6 @@ Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<d
 - Relative abundance (gDNA and cDNA)
 - CONTIG data (diversity sampling using *pAss*)
 
-
 ### KEGG (Functional Database)
 
 Generated from 4 files:
@@ -80,6 +79,7 @@ from the KEGG database (use the following commands to download the necessary fil
 |`/kegg/ligand/compound.tar.gz` | Ligand:CPD details| 
 |`/kegg/ligand/glycan.tar.gz` | Ligand:GLY details |
 |`/kegg/xml/kgml/metabolic/ko.tar.gz` | network properties |
+|`/kegg/xml/kgml/metabolic/ko.tar.gz` | module data |
 
 ### Taxonomy
 
@@ -145,61 +145,30 @@ If you’re building diamond on a older server please mail the author at wesley@
 
 ## Dependencies
 
-### Perl
+* Perl  > 5.10;
+* R     > v3.1.1 is required
+* NEO4J > 2.2
+  * Manual Installation
+    * Linux [installation](http://neo4j.com/download/)
+    * OSX [Installation](http://neo4j.com/download/)
 
-1. Local Perl
-    * Please use [tokuhirom/plenv](https://github.com/tokuhirom/plenv) to install a local version of perl (==v5.21.0)
-   and **CPANMINUS** using `$ plenv install-cpanm`
+  * Brew package manager
+    * [brew](http://brew.sh/)) for OSX
+    * [linuxbrew](https://github.com/Homebrew/linuxbrew) for linux
 
-    * If you already only need to install cpanminus, `cpanm`, (taken from, [stackoverflow: How can I use CPAN as a non-root user?](http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user)
-
-```
-curl http://cpanmin.us | perl - -l ~/perl5 App::cpanminus local::lib
-eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib`
-echo 'eval `perl -I ~/perl5/lib/perl5 -Mlocal::lib`' >> ~/.bash_profile
-echo 'export MANPATH=$HOME/perl5/man:$MANPATH' >> ~/.bash_profile
-```
-
-2. Install dependencies
-    * Install Carton using `$ cpanm Carton`.
-    * run `carton` in package’s root directory
+NOTE: dmg version hosted on neo4j does not work
 
 ```
-$ plenv install 5.21.0
-$ plenv install cpanm
-$ plenv global 5.21.0
-
-$ cd <omics repo>
-$ carton
+brew install neo4j
 ```
-
-### R
-
-1. > v3.1.1 is required
-
-
-### NEO4J
-
-#### Settings
-
-##### Security (Username, password)
-
-Newer versions of NEO4J have their security turn on by default
-
-##### Access
-uncomment access to allow query from IP addresses asigned from 127.0.0.1 otherwise known as localhost
-
-#### Installation 
-
-##### Linux
-Install [NEO4J](http://neo4j.com/download/)
-
-[tarball for neo4j community OSX/linux](http://info.neotechnology.com/download-thanks.html?edition=community&release=2.3.0-M01&flavour=unix&_ga=1.119121161.1401797244.1431421615)
-
-#### OSX
-
-Install community version `dmg` [link](http://neo4j.com/download/). 
-*may need a separate neo4j.server.properties file to point to. 
 
 ## Publication
 (not published yet)
+
+
+## OS Support
+
+* linux 
+* Mac OSX 
+
+
