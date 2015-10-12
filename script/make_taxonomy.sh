@@ -21,7 +21,7 @@ fi
 perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable} $tax2rank{$F[0]}=$F[2]; END{ store(\%tax2rank,q(tempfile)) }' $taxodump/nodes.dmp
 
 #reads the names
-perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile))}; print qq(taxid:int:ncbitaxid\tname\tl:label\t)} if (/scientific name/){$F[1] =~ s/[^a-zA-Z0-9 _-]//g;print qq($F[0]\t$F[1]\t$tax2rank{$F[0]},Taxon)}' $taxodump/names.dmp > $targetdir/out/nodes/tax_nodes
+perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile))}; print qq(taxid:ID\tname\tl:label\t)} if (/scientific name/){$F[1] =~ s/[^a-zA-Z0-9 _-]//g;print qq($F[0]\t$F[1]\t$tax2rank{$F[0]},Taxon)}' $taxodump/names.dmp > $targetdir/out/nodes/tax_nodes
 
 echo -e '0\tUnclassified\tno rank,Taxon' >> $targetdir/out/nodes/tax_nodes  #this adds unclassified
 #######################################################
@@ -31,5 +31,5 @@ echo -e '0\tUnclassified\tno rank,Taxon' >> $targetdir/out/nodes/tax_nodes  #thi
 #taxid:int:ncbitaxid     taxid:int:ncbitaxid     relationship
 #1       1       child.of
 ##################################################################
-perl -aln -F"\\t\\|\\t" -e 'BEGIN{print qq(taxid:int:ncbitaxid\ttaxid:int:ncbitaxid\trelationship\tstartend)} print qq($F[0]\t$F[1]\tchildof\t$F[0]_$F[1]) unless $F[0] == $F[1]' $taxodump/nodes.dmp > $targetdir/out/rels/tax2tax.rel
+perl -aln -F"\\t\\|\\t" -e 'BEGIN{print qq(taxid:START_ID\ttaxid:END_ID\trelationship:TYPE\tstartend)} print qq($F[0]\t$F[1]\tchildof\t$F[0]_$F[1]) unless $F[0] == $F[1]' $taxodump/nodes.dmp > $targetdir/out/rels/tax2tax.rel
 ##################################################################
