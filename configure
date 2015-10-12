@@ -103,12 +103,15 @@ foreach my $dataset (@datasets)
         #Check if the files are ready if not ask user to download and come back again
         unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz" & -e "$keggPath/module/module")
         {
-            croak "You do not have the necessary KEGG files: $keggPath/genes/ko/ko $keggPath/ligand/compound/compound $keggPath/ligand/glycan/glycan $keggPath/xml/kgml/metabolic/ko.tar.gz $keggPath/module/module";
+            croak join " ", "You do not have the necessary KEGG files, gunzip the necessary files:", qw| genes/ko/ko ligand/compound/compound ligand/glycan/glycan xml/kgml/metabolic/ko.tar.gz module/module|;
         }
         system "bash $installdir/scripts/make_metabolism.sh";
     }
     if($dataset =~ m/contig/i)
     {
+
+        #s/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g
+        #rmbr to remove symbols
         my $contigPath = $opt->get_contig;
         system "cp $contigPath/nodes/* $installdir/out/nodes/";
         system "cp $contigPath/rels/* $installdir/out/rels/";
@@ -216,7 +219,7 @@ eg. --datasets=taxonomy --datasets=readabundance (not ready) --dataset=metabolis
 =item --taxonomy -x -X
 
 path pointing to NBCI taxonomy
-uses to files: 1. nodes.dmp and 2. names.dmp
+uses two files: 1. nodes.dmp and 2. names.dmp
 
 =item --contig -c -C
 
