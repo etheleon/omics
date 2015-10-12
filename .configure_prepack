@@ -1,0 +1,272 @@
+#!/usr/bin/env perl
+
+#core module
+use FindBin qw/$Bin/;
+use POSIX;
+use Pod::Usage;
+use local::lib "$Bin/local";
+use File::Path;
+use File::Fetch;
+use Carp;
+
+if ($#ARGV == -1){pod2usage(
+        -message=>"no arguments detected",
+        -verbose=>2,
+        -output=>\*STDOUT
+    )}
+
+#required use cpanfile
+use Modern::Perl '2015';
+use experimental qw/signatures postderef smartmatch/;
+use Getopt::Lucid qw( :all );
+use autodie;
+use File::Which;
+
+my $keyStore =
+{
+    taxonomy    => ["ncbitaxid"],
+    metabolism  => ["koid","cpdid","pathwayid"],
+    contig      => ["contigid"]
+};
+
+#testing
+##################################################
+#Arguments
+##################################################
+my $opt = Getopt::Lucid->getopt(
+[
+    Param  ("path|p")->default($ENV{"HOME"})->anycase(),
+    Param  ("projectName|n")->default("meta4j")->anycase(),
+    List   ("dataSets|d")->anycase(),
+    Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
+    Param  ("taxonomy|x")->needs("dataSets")->anycase(),
+    Param  ("contig|c")->needs("dataSets")->anycase(),
+    List   ("memory|m")->anycase(),
+    Param  ("threads|t")->default(1)->anycase(),
+    Switch ("ftp|f"),
+    Param  ("user|u")->needs("ftp")->anycase(),
+    Param  ("password|w")->needs("ftp")->anycase(),
+    Param  ("neo4jimport|j")->anycase(),
+    Switch ("help|h")->anycase()
+]);
+
+pod2usage(-verbose=>2) if $opt->get_help;
+
+$opt->validate({ requires => ['dataSets'] });
+my @datasets = $opt->get_dataSets;
+@datasets = map {lc $_} @datasets;
+
+my $neo4j = $opt->get_neo4jimport;
+unless(defined $neo4j)
+{
+    my $path = which "neo4j-import";
+    defined $path ? $neo4j = "neo4j-import" : croak "neo4j-import not found. Please add to path";
+}
+
+
+my @possible = (keys %{$keyStore});
+foreach (@datasets)
+{
+    say $_;
+    $_ ~~  @possible ? say "##\tincluding $_ dataset" : die "$_ is not a supported dataset\n";
+}
+
+
+# 1. Create directories
+my $installdir = join "/", $opt->get_path, $opt->get_projectName;
+&mkpath($_) for ($installdir, map {"$installdir/$_"}  qw/out\/nodes out\/rels out\/database misc scripts/);
+
+# 3 configure makeXX.sh files
+
+foreach my $dataset (@datasets)
+{
+    if($dataset =~ m/metabolism/i)
+    {
+        my $keggPath;
+        if ($opt->get_ftp){
+            my $username = $opt->get_user;
+            my $password = $opt->get_password;
+
+            $keggPath = $installdir;
+            foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz module/module.gz)) {
+                say "  \t## Downloading $_";
+                `curl --progress-bar --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_`;
+            };
+                `find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;`;
+                `gunzip $keggPath/module/module.gz`;
+#                `find $keggPath -name "*.gz" -execdir gunzip "{}" \\;`;
+        }else{
+            $keggPath = $opt->get_kegg;
+        }
+        my $cores = $opt->get_threads;
+        &configureMetab($installdir, $keggPath, $cores);
+        #Check if the files are ready if not ask user to download and come back again
+        unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz" & -e "$keggPath/module/module")
+        {
+            croak join " ", "You do not have the necessary KEGG files, gunzip the necessary files:", qw| genes/ko/ko ligand/compound/compound ligand/glycan/glycan xml/kgml/metabolic/ko.tar.gz module/module|;
+        }
+        system "bash $installdir/scripts/make_metabolism.sh";
+    }
+    if($dataset =~ m/contig/i)
+    {
+
+        #s/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g
+        #rmbr to remove symbols
+        my $contigPath = $opt->get_contig;
+        system "cp $contigPath/nodes/* $installdir/out/nodes/";
+        system "cp $contigPath/rels/* $installdir/out/rels/";
+    }
+    if($dataset =~ m/taxonomy/i)
+    {
+        my $taxonPath = $opt->get_taxonomy;
+        &configureTaxonomy($installdir, $taxonPath);
+        #Check if the files are ready if not ask user to download and come back again
+        unless(-e "$taxonPath/taxdump.tar.gz")
+        {
+            croak "You do not have the necessary NCBI taxonomy files: $taxonPath/taxdump.tar.gz";
+        }
+        system "bash $installdir/scripts/make_taxonomy.sh";
+    }
+}
+
+# Batch-Import
+make($installdir, $neo4j);
+
+#Functions
+sub make($installDIR, $neo4j)
+{
+    my $time = strftime("%d%b%Y-%H%M", localtime);
+    my $output          = "$installDIR/out/database/$time".".db";
+
+#    my $allnodes        = join ",",<$installDIR/out/nodes/*>;
+#    my $allrels         = join ",",<$installDIR/out/rels/*>;
+
+
+    my $nodesIMPORT = join " ", map { "--nodes $_" } <$installDIR/out/nodes/*>;
+    my $edgesIMPORT = join " ", map { "--relationships $_" } <$installDIR/out/rels/*>;
+
+    my $finalCMD = "$neo4j --into $output --delimiter 'TAB' --array-delimiter '|' $nodesIMPORT $edgesIMPORT";
+    say $finalCMD;
+}
+
+sub configureTaxonomy($installDIR, $taxFTP){
+    open my $makeTax    , "<" , "script/make_taxonomy.sh";
+    open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh";
+    while(<$makeTax>){
+        say $makeTaxNew "targetdir=$installDIR"           if /^targetdir=/;
+        say $makeTaxNew "taxodump=$taxFTP"                if /^taxodump=/;
+        print $makeTaxNew $_                              unless /(^targetdir)|(^taxodump)/;
+    }
+}
+
+sub configureMetab($installDIR, $keggFTP, $cores){
+    open my $makeMetab, "<", "script/make_metabolism.sh";
+    open my $makeMetabNew, ">", "$installDIR/scripts/make_metabolism.sh";
+
+    while(<$makeMetab>){
+        say $makeMetabNew "targetdir=$installDIR"           if /^targetdir=/;
+        say $makeMetabNew "keggdump=$keggFTP"               if /^keggdump=/;
+        say $makeMetabNew "meta4jHome=$keggFTP"             if /^meta4jHome=/;
+        say $makeMetabNew "cores=$cores"                         if /^cores=/;
+        print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)|(^cores)/;
+    }
+
+}
+
+##################################################
+#Documentation
+##################################################
+
+=pod
+
+=head1 NAME
+
+ meta4j - constructing neo4j batch-import env
+
+=head1 SYNOPSIS
+
+ perl configure.pl [options...]
+
+ example: configure.pl --dataSets=contig --dataSets=metabolism --dataSets=taxonomy --threads=10 --contig=/home/user/reDiamond/out/miscDB/ --kegg=/path/to/kegg/ftp --taxonomy=/path/to/db/taxonomy_12sept2014/
+
+=head1 OPTIONS
+
+=over 4
+
+=item --projectName -n -N
+
+name of the folder storing all projects
+
+=item --path -p -P
+
+root dir to place base import files (excluding the projectName). default path is set to the $home/meta4j
+
+=item --threads -t
+
+The number of threads to use when preparing the input files
+default is 1;
+Used for the KEGG parsing
+
+=item --neo4jimport -j
+
+The path to the neo4j-import executable
+
+=item --datasets -d -D (Compulsory)
+
+list of datasets used for this graphdb. for multiple datasets:
+eg. --datasets=taxonomy --datasets=readabundance (not ready) --dataset=metabolism --dataset=contig
+
+=item --taxonomy -x -X
+
+path pointing to NBCI taxonomy
+uses two files: 1. nodes.dmp and 2. names.dmp
+
+=item --contig -c -C
+
+path to folder containing nodes and relationships for contigs
+eg. contig2tax contig2ko
+
+=item --kegg -k -K
+
+path to download kegg files if not using FTP EG. if --path=/home/user --projectname=meta4j then --kegg=/home/user/meta4j
+
+=item --ftp -f
+
+Download neccessary kegg files
+
+=item --user -u
+
+username for keggFTP
+
+=item --password -w
+
+password for keggFTP
+
+=item --help -h -H
+
+help
+
+=back
+
+=head1 DESCRIPTION
+
+b<configure> sets up folder structure for use by makexx.sh files
+for data warehousing and analysis of meta-omics datasets
+together with in meta4j's analytics pipeline <r package metacom>.
+
+later requires following r packages from github:
+- 'etheleon/metamaps'.
+
+=head1 author
+
+Wesley GOI
+--
+please report bugs to:
+wesley@bic.nus.edu.sg
+
+=head1 version
+
+1.00
+
+=cut
+
