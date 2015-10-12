@@ -138,10 +138,29 @@ K00001:contig00015      ko:K00001
 Users will have to run a blastx aligner (eg. [rapsearch2](http://omics.informatics.indiana.edu/mg/RAPSearch2/), [diamond](https://github.com/bbuchfink/diamond/)) 
 against a protein sequence database for detecting remote homologies.
 
-### Installation`
-Using `linuxbrew` is highly recommended for either rapsearch2 or diamond
+### Installation
 
-If you’re building diamond on a older server please mail the author at wesley@bic.nus.edu.sg for the binary.
+#### OSX
+
+Open the terminal app and enter the following commands to install neo4j
+
+```
+ruby -e “$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)”
+```
+
+```
+brew install neo4j
+```
+
+If you dont already have R installed on your system use
+
+```
+brew install R
+```
+
+#### LINUX
+
+same as above but have linuxbrew installed and working.
 
 ## Dependencies
 
