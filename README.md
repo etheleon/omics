@@ -52,8 +52,7 @@ $ git submodule update
 ## Usage
 
 ```
-eg. 
-$ ./configure.pl --dataSet=taxonomy --dataSet=contig --dataSet=metabolism -c=out/miscDB -ftp --user=<keggFTP username> --password=<keggFTP password>
+./configure -d=contig -d=metabolism -d=taxonomy -t=10 -x=$HOME/db/taxonomy -j=$HOME/local/neo4j-community-2.2.2/bin/neo4j-import -c=$HOME/contigs -ftp --user=<keggFTP username> --password=<keggFTP password>
 ```
 
 Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
