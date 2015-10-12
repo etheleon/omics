@@ -1,12 +1,9 @@
 #!/usr/bin/env perl
 
 #core module
-use FindBin qw/$Bin/;
 use POSIX;
 use Pod::Usage;
-use local::lib "$Bin/local";
 use File::Path;
-use File::Fetch;
 use Carp;
 
 if ($#ARGV == -1){pod2usage(
@@ -16,8 +13,6 @@ if ($#ARGV == -1){pod2usage(
     )}
 
 #required use cpanfile
-use Modern::Perl '2015';
-use experimental qw/signatures postderef smartmatch/;
 use Getopt::Lucid qw( :all );
 use autodie;
 use File::Which;
@@ -67,8 +62,8 @@ unless(defined $neo4j)
 my @possible = (keys %{$keyStore});
 foreach (@datasets)
 {
-    say $_;
-    $_ ~~  @possible ? say "##\tincluding $_ dataset" : die "$_ is not a supported dataset\n";
+    print $_, "\n";
+    $_ ~~  @possible ? print "##\tincluding $_ dataset\n" : die "$_ is not a supported dataset\n";
 }
 
 
@@ -89,8 +84,8 @@ foreach my $dataset (@datasets)
 
             $keggPath = $installdir;
             foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz module/module.gz)) {
-                say "  \t## Downloading $_";
-                `curl --progress-bar --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_`;
+                print "  \t## Downloading $_\n";
+                system "curl --progress-bar --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_";
             };
                 `find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;`;
                 `gunzip $keggPath/module/module.gz`;
@@ -133,8 +128,9 @@ foreach my $dataset (@datasets)
 make($installdir, $neo4j);
 
 #Functions
-sub make($installDIR, $neo4j)
+sub make
 {
+    my ($installDIR, $neo4j) = @_;
     my $time = strftime("%d%b%Y-%H%M", localtime);
     my $output          = "$installDIR/out/database/$time".".db";
 
@@ -146,31 +142,32 @@ sub make($installDIR, $neo4j)
     my $edgesIMPORT = join " ", map { "--relationships $_" } <$installDIR/out/rels/*>;
 
     my $finalCMD = "$neo4j --into $output --delimiter 'TAB' --array-delimiter '|' $nodesIMPORT $edgesIMPORT";
-    say $finalCMD;
+    print $finalCMD, "\n";
 }
 
-sub configureTaxonomy($installDIR, $taxFTP){
-    open my $makeTax    , "<" , "script/make_taxonomy.sh";
-    open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh";
+sub configureTaxonomy{
+    my ($installDIR, $taxFTP) = @_;
+    open my $makeTax    , "<" , "script/make_taxonomy.sh" || die "Cannot open script/make_taxonomy.sh $!\n";
+    open my $makeTaxNew , ">" , "$installDIR/scripts/make_taxonomy.sh" || die "Cannot open $installDIR/scripts/make_taxonomy.sh $!\n";
     while(<$makeTax>){
-        say $makeTaxNew "targetdir=$installDIR"           if /^targetdir=/;
-        say $makeTaxNew "taxodump=$taxFTP"                if /^taxodump=/;
+        print $makeTaxNew "targetdir=$installDIR\n"           if /^targetdir=/;
+        print $makeTaxNew "taxodump=$taxFTP\n"                if /^taxodump=/;
         print $makeTaxNew $_                              unless /(^targetdir)|(^taxodump)/;
     }
 }
 
-sub configureMetab($installDIR, $keggFTP, $cores){
-    open my $makeMetab, "<", "script/make_metabolism.sh";
-    open my $makeMetabNew, ">", "$installDIR/scripts/make_metabolism.sh";
+sub configureMetab{
+    my ($installDIR, $keggFTP, $cores) = @_;
+    open my $makeMetab, "<", "script/make_metabolism.sh" || die "Cannot open script/make_metabolism.sh $!\n";
+    open my $makeMetabNew, ">", "$installDIR/scripts/make_metabolism.sh" || die "Cannot open $installDIR/scripts/make_metabolism.sh $!\n";
 
     while(<$makeMetab>){
-        say $makeMetabNew "targetdir=$installDIR"           if /^targetdir=/;
-        say $makeMetabNew "keggdump=$keggFTP"               if /^keggdump=/;
-        say $makeMetabNew "meta4jHome=$keggFTP"             if /^meta4jHome=/;
-        say $makeMetabNew "cores=$cores"                         if /^cores=/;
+        print $makeMetabNew "targetdir=$installDIR\n"           if /^targetdir=/;
+        print $makeMetabNew "keggdump=$keggFTP\n"               if /^keggdump=/;
+        print $makeMetabNew "meta4jHome=$keggFTP\n"             if /^meta4jHome=/;
+        print $makeMetabNew "cores=$cores\n"                         if /^cores=/;
         print $makeMetabNew $_                              unless /(^targetdir)|(^keggdump)|(^meta4jHome)|(^cores)/;
     }
-
 }
 
 ##################################################
