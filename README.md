@@ -29,25 +29,9 @@ edit the following line in `neo4j-server.properties` to point to database `org.n
 neo4j start
 ```
 
-## Components
+## Other Dependencies
 
-- KEGG (Functional Database)
-    * Compounds
-    * Kegg Orthologs
-    * Modules
-    * Pathways
-
-- NCBI’s Taxonomy database
-- Relative abundance (gDNA and cDNA)
-- CONTIG data (diversity sampling using *pAss*)
-
-## Dependencies
-
-### Git Submodules
-
-[keggParser](https://github.com/etheleon/keggParser)
-
-### Software
+The following should be preinstalled:
 
 | Software | Version / Packages / etc                                                                             |
 | ----     | ----                                                                                                 |
@@ -55,24 +39,22 @@ neo4j start
 | R        | > v3.1.2 is required and the following packages (dplyr igraph XML magrittr)                          |
 | NEO4J    | > 2.2 (JAVA; `JAVA_HOME` has to be defined in your `$HOME/.bashrc` else `NEO4J-import` will not work |
 
-#### NEO4J Installation 
+Installing NEO4J
 
-##### Install brew
-
-[brew package manager](http://brew.sh/)
+1. Install [brew](http://brew.sh/)
 
 | OS    | Instructions                                                                                                            |
 | ---   | ---                                                                                                                     |
 | OSX   | `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`                             |
 | LINUX | [instructions](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-linuxbrew-on-a-linux-vps) |
 
-##### Install neo4j 
+2. Install neo4j
 
 ```
 $ brew install neo4j
 ```
 
-### External database
+## External datasets
 
 * NCBI taxonomy (download on your own)
 
