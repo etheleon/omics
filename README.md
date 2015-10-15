@@ -20,10 +20,14 @@ Further design of analytic tools are designed by Wesley **GOI**, Chao **XIE** an
 
 Meta4j aims to be a highly customizable database for researchers to store and query interconnected data. 
 
-## Installation
-
 ![workflow](./workflow.png)
 
+
+## Installation
+
+```
+git clone --recursive git@github.com:etheleon/omics.git
+```
 
 Before attempting to prepare your own customized version of the Meta4j database please take time to install the necessary dependencies. (See Dependencies section).
  
@@ -36,12 +40,6 @@ __OMICS__
 now currently uses a submodule [keggParser](https://github.com/etheleon/keggParser). 
 Run the following commands after cloning this repository to clone `keggParser`.
 
-```
-$ git submodule init
-$ git submodule update
-```
-
-[git documentation on submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
 > Here we’ll clone a project with a submodule in it.
 > When you clone such a project, by default you get the directories that contain submodules, 
@@ -56,7 +54,6 @@ $ git submodule update
 ```
 
 Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
-
 
 ## Data Components
 
