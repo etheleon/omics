@@ -163,22 +163,24 @@ same as above but have linuxbrew installed and working.
 
 ## Dependencies
 
-* Perl  > 5.10;
-* R     > v3.1.1 is required
-* NEO4J > 2.2
-  * Manual Installation
-    * Linux [installation](http://neo4j.com/download/)
-    * OSX [Installation](http://neo4j.com/download/)
+| Software | Version / Packages / etc                                                                             |
+| ----     | ----                                                                                                 |
+| Perl     | > 5.10                                                                                               |
+| R        | > v3.1.2 is required and the following packages (dplyr igraph XML magrittr)                 |
+| NEO4J    | > 2.2 (JAVA; `JAVA_HOME` has to be defined in your `$HOME/.bashrc` else `NEO4J-import` will not work |
 
-  * Brew package manager
-    * [brew](http://brew.sh/)) for OSX
-    * [linuxbrew](https://github.com/Homebrew/linuxbrew) for linux
-
-NOTE: dmg version hosted on neo4j does not work
+### NEO4J Installation 
 
 ```
 brew install neo4j
 ```
+
+* Install Brew package manager
+    * [brew](http://brew.sh/)) for OSX
+    * [linuxbrew](https://github.com/Homebrew/linuxbrew) for linux
+
+
+NOTE: dmg version hosted on neo4j does not work (cause `neo4j-import is not included`)
 
 ## Publication
 (not published yet)
@@ -188,5 +190,4 @@ brew install neo4j
 
 * linux 
 * Mac OSX 
-
 
