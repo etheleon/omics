@@ -149,7 +149,8 @@ sub make
     my $edgesIMPORT = join " ", map { "--relationships $_" } <$installDIR/out/rels/*>;
 
     my $finalCMD = "$neo4j --into $output --delimiter 'TAB' --array-delimiter '|' $nodesIMPORT $edgesIMPORT";
-    print $finalCMD, "\n";
+    #print $finalCMD, "\n";
+    system $finalCMD;
 }
 
 sub configureTaxonomy{
