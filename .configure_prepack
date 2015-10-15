@@ -70,9 +70,9 @@ my $has_dplyr    = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppre
 my $has_magrittr = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(XML))); writeLines(ifelse(hasPackage, "1", "0"))'`      == 1;
 my $has_XML      = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(magrittr))); writeLines(ifelse(hasPackage, "1", "0"))'` == 1;
 my $has_igraph   = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(igraph))); writeLines(ifelse(hasPackage, "1", "0"))'`   == 1;
-print "$_\n" for ($has_dplyr, $has_magrittr, $has_XML, $has_igraph);
+#print "$_\n" for ($has_dplyr, $has_magrittr, $has_XML, $has_igraph);
 
-croak "You do not have the required R packages installed: dplyr,magrittr,XML,parallel" unless $has_dplyr & $has_magrittr & $has_XML & $has_parallel & $has_igraph;
+croak "You do not have the required R packages installed: dplyr,magrittr,XML" unless $has_dplyr & $has_magrittr & $has_XML & $has_igraph;
 
 # 1. Create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;
