@@ -14,7 +14,6 @@ if ($#ARGV == -1){pod2usage(
 
 #required use cpanfile
 use Getopt::Lucid qw( :all );
-use autodie;
 use File::Which;
 
 my $keyStore =
@@ -66,6 +65,13 @@ foreach (@datasets)
     $_ ~~  @possible ? print "##\tincluding $_ dataset\n" : die "$_ is not a supported dataset\n";
 }
 
+# 0. Check R dependencies
+my $has_dplyr    = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(dplyr2))); writeLines(ifelse(hasPackage, "1", "0"))'`   == 1;
+my $has_magrittr = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(XML))); writeLines(ifelse(hasPackage, "1", "0"))'`      == 1;
+my $has_XML      = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(magrittr))); writeLines(ifelse(hasPackage, "1", "0"))'` == 1;
+my $has_parallel = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(parallel))); writeLines(ifelse(hasPackage, "1", "0"))'` == 1;
+my $has_igraph   = `R --vanilla --slave -e 'hasPackage = suppressWarnings(suppressPackageStartupMessages(require(igraph))); writeLines(ifelse(hasPackage, "1", "0"))'`   == 1;
+croak "You do not have the required R packages installed: dplyr,magrittr,XML,parallel" unless $has_dplyr & $has_magrittr & $has_XML & $has_parallel & $has_igraph;
 
 # 1. Create directories
 my $installdir = join "/", $opt->get_path, $opt->get_projectName;
