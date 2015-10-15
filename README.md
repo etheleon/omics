@@ -45,7 +45,7 @@ neo4j start
 
 ### Git Submodules
 
-1. [keggParser](https://github.com/etheleon/keggParser)
+[keggParser](https://github.com/etheleon/keggParser)
 
 ### Software
 
@@ -63,8 +63,8 @@ neo4j start
 
 | OS    | Instructions                                                                                                            |
 | ---   | ---                                                                                                                     |
-| OSX   | `$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)”`                             |
-| LINUX | Follow [instructions](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-linuxbrew-on-a-linux-vps) |
+| OSX   | `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`                             |
+| LINUX | [instructions](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-linuxbrew-on-a-linux-vps) |
 
 ##### Install neo4j 
 
