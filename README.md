@@ -5,26 +5,29 @@ Meta4j
 
 **Meta4J** is a CLI tool for creation of a integrated `-omics` graph database used for microbial community centric analyses.
 
-## Graph Data Model
-
-![workflow](./workflow.png)
-
 ## Installation
 
 ```
 git clone --recursive git@github.com:etheleon/omics.git
 ```
 
-
 ## Usage
 
+### 1 Create DB
 ```
 ./configure -d=contig -d=metabolism -d=taxonomy -t=10 -x=$HOME/db/taxonomy -j=$HOME/local/neo4j-community-2.2.2/bin/neo4j-import -c=$HOME/contigs -ftp --user=<keggFTP username> --password=<keggFTP password>
 ```
 
-**NOTE**: For accessing the database and functions used in the analytical pipeline use the `MetamapsDB` R package from [MetamapsDB](https://github.com/etheleon/metamaps).
 
-Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<database.db>`
+### 2 Point to DB
+
+edit the following line in `neo4j-server.properties` to point to database `org.neo4j.server.database.location=</path2/meta4j/out/database/database.db>`
+
+### 3 Start neo4j
+
+```
+neo4j start
+```
 
 ## Components
 
@@ -40,9 +43,9 @@ Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<d
 
 ## Dependencies
 
-### Submodules
+### Git Submodules
 
-[keggParser](https://github.com/etheleon/keggParser). 
+1. [keggParser](https://github.com/etheleon/keggParser)
 
 ### Software
 
@@ -54,18 +57,25 @@ Edit `neo4j-server.properties` and point database to `<outputDIR/out/database/<d
 
 #### NEO4J Installation 
 
-brew package manager
+##### Install brew
+
+[brew package manager](http://brew.sh/)
+
+| OS    | Instructions                                                                                                            |
+| ---   | ---                                                                                                                     |
+| OSX   | `$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)”`                             |
+| LINUX | Follow [instructions](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-linuxbrew-on-a-linux-vps) |
+
+##### Install neo4j 
 
 ```
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)”
-```
-
-**NOTE** use linuxbrew if using a linux machine
-
-```
-brew install neo4j
+$ brew install neo4j
 ```
 
 ### External database
 
-* NCBI taxonomy
+* NCBI taxonomy (download on your own)
+
+## Graph Data Model
+
+![workflow](./workflow.png)
