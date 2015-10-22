@@ -21,9 +21,9 @@ fi
 perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable} $tax2rank{$F[0]}=$F[2]; END{ store(\%tax2rank,q(tempfile)) }' $taxodump/nodes.dmp
 
 #reads the names
-perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile))}; print qq(taxid:ID\tname\tl:label\t)} if (/scientific name/){$F[1] =~ s/[^a-zA-Z0-9 _-]//g;print qq($F[0]\t$F[1]\t$tax2rank{$F[0]},Taxon)}' $taxodump/names.dmp > $targetdir/out/nodes/tax_nodes
+perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile))}; print qq(taxid:ID\tname\tl:label\t)} if (/scientific name/){$F[1] =~ s/[^a-zA-Z0-9 _-]//g;print qq($F[0]\t$F[1]\t$tax2rank{$F[0]}|Taxon)}' $taxodump/names.dmp > $targetdir/out/nodes/tax_nodes
 
-echo -e '0\tUnclassified\tno rank,Taxon' >> $targetdir/out/nodes/tax_nodes  #this adds unclassified
+echo -e '0\tUnclassified\tno rank|Taxon' >> $targetdir/out/nodes/tax_nodes  #this adds unclassified
 #######################################################
 
 # EDGES ---------------------------------------------------------#
