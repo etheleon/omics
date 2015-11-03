@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/19045/etheleon/omics.svg)](https://zenodo.org/badge/latestdoi/19045/etheleon/omics)
+
+
 ## Installation
 
 Clone the repository.
