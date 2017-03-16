@@ -26,9 +26,14 @@ perl -aln -F"\\t\\|\\t" -e 'BEGIN{use Storable; %tax2rank=%{retrieve(q(tempfile)
 echo -e '0\tUnclassified\tno rank|Taxon' >> $targetdir/out/nodes/tax_nodes  #this adds unclassified
 #######################################################
 
+#--
+#Build SQL
+perl -nE 'BEGIN{say join "\t" qw/taxid name species/} s/Taxon//; s/\|//; print $_ unless $. == 1'
+
+
 # EDGES ---------------------------------------------------------#
 #01::taxid2taxid##################################################
-#taxid:int:ncbitaxid     taxid:int:ncbitaxid     relationship
+#taxid:START_ID     taxid:int:END_ID    relationship
 #1       1       child.of
 ##################################################################
 perl -aln -F"\\t\\|\\t" -e 'BEGIN{print qq(taxid:START_ID\ttaxid:END_ID\trelationship:TYPE\tstartend)} print qq($F[0]\t$F[1]\tchildof\t$F[0]_$F[1]) unless $F[0] == $F[1]' $taxodump/nodes.dmp > $targetdir/out/rels/tax2tax.rel

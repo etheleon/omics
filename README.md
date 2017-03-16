@@ -9,7 +9,19 @@ $ git clone --recursive git@github.com:etheleon/omics.git
 Batch import data into single `<database.db>` file.
 
 ```
-$ ./configure -d=contig -d=metabolism -d=taxonomy -t=10 -x=$HOME/db/taxonomy -j=$HOME/local/neo4j-community-2.2.2/bin/neo4j-import -c=$HOME/contigs -ftp --user=<keggFTP username> --password=<keggFTP password>
+#just KEGG
+./configure --dataSets=metabolism \
+    --kegg $HOME/rohankegg/keggftp \
+    --ftp \
+    --user=BJ2017 \
+    --password=kopi45Tiam \
+    -t=10 \
+    -j=$HOME/local/neo4j-community-2.2.2/bin/neo4j-import \
+    --path $HOME \
+    --projectName myProjectName
+
+#everything
+./configure -d=contig -d=metabolism -d=taxonomy -t=10 -x=$HOME/db/taxonomy -j=$HOME/local/neo4j-community-2.2.2/bin/neo4j-import -c=$HOME/contigs -ftp --user=<keggFTP username> --password=<keggFTP password>
 ```
 
 Edit `org.neo4j.server.database.location=/graph/db` to `org.neo4j.server.database.location=</path2/meta4j/out/database/database.db>` in `neo4j-server.properties`.

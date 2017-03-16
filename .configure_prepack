@@ -29,7 +29,7 @@ my $keyStore =
 ##################################################
 my $opt = Getopt::Lucid->getopt(
 [
-    Param  ("path|p")->default($ENV{"HOME"})->anycase(),
+    Param  ("path|g")->default($ENV{"HOME"})->anycase(),
     Param  ("projectName|n")->default("meta4j")->anycase(),
     List   ("dataSets|d")->anycase(),
     Param  ("kegg|k")->default($ENV{"HOME"}."/meta4j")->needs("dataSets")->anycase(),
