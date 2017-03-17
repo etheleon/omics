@@ -7,202 +7,202 @@ my %fatpacked;
 
 $fatpacked{"Class/Data/Inheritable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'CLASS_DATA_INHERITABLE';
   package Class::Data::Inheritable;
-  
+
   use strict qw(vars subs);
   use vars qw($VERSION);
   $VERSION = '0.08';
-  
+
   sub mk_classdata {
       my ($declaredclass, $attribute, $data) = @_;
-  
+
       if( ref $declaredclass ) {
           require Carp;
           Carp::croak("mk_classdata() is a class method, not an object method");
       }
-  
+
       my $accessor = sub {
           my $wantclass = ref($_[0]) || $_[0];
-  
+
           return $wantclass->mk_classdata($attribute)->(@_)
             if @_>1 && $wantclass ne $declaredclass;
-  
+
           $data = $_[1] if @_>1;
           return $data;
       };
-  
+
       my $alias = "_${attribute}_accessor";
       *{$declaredclass.'::'.$attribute} = $accessor;
       *{$declaredclass.'::'.$alias}     = $accessor;
   }
-  
+
   1;
-  
+
   __END__
-  
+
   =head1 NAME
-  
+
   Class::Data::Inheritable - Inheritable, overridable class data
-  
+
   =head1 SYNOPSIS
-  
+
     package Stuff;
     use base qw(Class::Data::Inheritable);
-  
+
     # Set up DataFile as inheritable class data.
     Stuff->mk_classdata('DataFile');
-  
+
     # Declare the location of the data file for this class.
     Stuff->DataFile('/etc/stuff/data');
-  
+
     # Or, all in one shot:
     Stuff->mk_classdata(DataFile => '/etc/stuff/data');
-  
+
   =head1 DESCRIPTION
-  
+
   Class::Data::Inheritable is for creating accessor/mutators to class
   data.  That is, if you want to store something about your class as a
   whole (instead of about a single object).  This data is then inherited
   by your subclasses and can be overriden.
-  
+
   For example:
-  
+
     Pere::Ubu->mk_classdata('Suitcase');
-  
+
   will generate the method Suitcase() in the class Pere::Ubu.
-  
+
   This new method can be used to get and set a piece of class data.
-  
+
     Pere::Ubu->Suitcase('Red');
     $suitcase = Pere::Ubu->Suitcase;
-  
+
   The interesting part happens when a class inherits from Pere::Ubu:
-  
+
     package Raygun;
     use base qw(Pere::Ubu);
-    
+
     # Raygun's suitcase is Red.
     $suitcase = Raygun->Suitcase;
-  
+
   Raygun inherits its Suitcase class data from Pere::Ubu.
-  
+
   Inheritance of class data works analogous to method inheritance.  As
   long as Raygun does not "override" its inherited class data (by using
   Suitcase() to set a new value) it will continue to use whatever is set
   in Pere::Ubu and inherit further changes:
-  
+
     # Both Raygun's and Pere::Ubu's suitcases are now Blue
     Pere::Ubu->Suitcase('Blue');
-  
+
   However, should Raygun decide to set its own Suitcase() it has now
   "overridden" Pere::Ubu and is on its own, just like if it had
   overriden a method:
-  
+
     # Raygun has an orange suitcase, Pere::Ubu's is still Blue.
     Raygun->Suitcase('Orange');
-  
+
   Now that Raygun has overridden Pere::Ubu futher changes by Pere::Ubu
   no longer effect Raygun.
-  
+
     # Raygun still has an orange suitcase, but Pere::Ubu is using Samsonite.
     Pere::Ubu->Suitcase('Samsonite');
-  
+
   =head1 Methods
-  
+
   =head2 mk_classdata
-  
+
     Class->mk_classdata($data_accessor_name);
     Class->mk_classdata($data_accessor_name => $value);
-  
+
   This is a class method used to declare new class data accessors.
   A new accessor will be created in the Class using the name from
   $data_accessor_name, and optionally initially setting it to the given
   value.
-  
+
   To facilitate overriding, mk_classdata creates an alias to the
   accessor, _field_accessor().  So Suitcase() would have an alias
   _Suitcase_accessor() that does the exact same thing as Suitcase().
   This is useful if you want to alter the behavior of a single accessor
   yet still get the benefits of inheritable class data.  For example.
-  
+
     sub Suitcase {
         my($self) = shift;
         warn "Fashion tragedy" if @_ and $_[0] eq 'Plaid';
-  
+
         $self->_Suitcase_accessor(@_);
     }
-  
+
   =head1 AUTHOR
-  
+
   Original code by Damian Conway.
-  
+
   Maintained by Michael G Schwern until September 2005.
-  
+
   Now maintained by Tony Bowden.
-  
+
   =head1 BUGS and QUERIES
-  
+
   Please direct all correspondence regarding this module to:
     bug-Class-Data-Inheritable@rt.cpan.org
-  
+
   =head1 COPYRIGHT and LICENSE
-  
-  Copyright (c) 2000-2005, Damian Conway and Michael G Schwern. 
-  All Rights Reserved.  
-  
+
+  Copyright (c) 2000-2005, Damian Conway and Michael G Schwern.
+  All Rights Reserved.
+
   This module is free software. It may be used, redistributed and/or
   modified under the same terms as Perl itself.
-  
+
   =head1 SEE ALSO
-  
+
   L<perltooc> has a very elaborate discussion of class data in Perl.
-  
+
 CLASS_DATA_INHERITABLE
 
 $fatpacked{"Devel/StackTrace.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'DEVEL_STACKTRACE';
   package Devel::StackTrace;
   # git description: v1.34-10-g810fd3f
-  
+
   $Devel::StackTrace::VERSION = '2.00';
   use 5.006;
-  
+
   use strict;
   use warnings;
-  
+
   use Devel::StackTrace::Frame;
   use File::Spec;
   use Scalar::Util qw( blessed );
-  
+
   use overload
       '""'     => \&as_string,
       fallback => 1;
-  
+
   sub new {
       my $class = shift;
       my %p     = @_;
-  
+
       $p{unsafe_ref_capture} = !delete $p{no_refs}
           if exists $p{no_refs};
-  
+
       my $self = bless {
           index  => undef,
           frames => [],
           raw    => [],
           %p,
       }, $class;
-  
+
       $self->_record_caller_data();
-  
+
       return $self;
   }
-  
+
   sub _record_caller_data {
       my $self = shift;
-  
+
       my $filter = $self->{filter_frames_early} && $self->_make_frame_filter();
-  
+
       # We exclude this method by starting at least one frame back.
       my $x = 1 + ( $self->{skip_frames} || 0 );
-  
+
       while (
           my @c
           = $self->{no_args}
@@ -214,105 +214,105 @@ $fatpacked{"Devel/StackTrace.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
               caller( $x++ );
           }
           ) {
-  
+
           my @args;
-  
+
           @args = $self->{no_args} ? () : @DB::args;
-  
+
           my $raw = {
               caller => \@c,
               args   => \@args,
           };
-  
+
           next if $filter && !$filter->($raw);
-  
+
           unless ( $self->{unsafe_ref_capture} ) {
               $raw->{args} = [ map { ref $_ ? $self->_ref_to_string($_) : $_ }
                       @{ $raw->{args} } ];
           }
-  
+
           push @{ $self->{raw} }, $raw;
       }
   }
-  
+
   sub _ref_to_string {
       my $self = shift;
       my $ref  = shift;
-  
+
       return overload::AddrRef($ref)
           if blessed $ref && $ref->isa('Exception::Class::Base');
-  
+
       return overload::AddrRef($ref) unless $self->{respect_overload};
-  
+
       local $@;
       local $SIG{__DIE__};
-  
+
       my $str = eval { $ref . '' };
-  
+
       return $@ ? overload::AddrRef($ref) : $str;
   }
-  
+
   sub _make_frames {
       my $self = shift;
-  
+
       my $filter = !$self->{filter_frames_early} && $self->_make_frame_filter();
-  
+
       my $raw = delete $self->{raw};
       for my $r ( @{$raw} ) {
           next if $filter && !$filter->($r);
-  
+
           $self->_add_frame( $r->{caller}, $r->{args} );
       }
   }
-  
+
   my $default_filter = sub { 1 };
-  
+
   sub _make_frame_filter {
       my $self = shift;
-  
+
       my ( @i_pack_re, %i_class );
       if ( $self->{ignore_package} ) {
           local $@;
           local $SIG{__DIE__};
-  
+
           $self->{ignore_package} = [ $self->{ignore_package} ]
               unless eval { @{ $self->{ignore_package} } };
-  
+
           @i_pack_re
               = map { ref $_ ? $_ : qr/^\Q$_\E$/ } @{ $self->{ignore_package} };
       }
-  
+
       my $p = __PACKAGE__;
       push @i_pack_re, qr/^\Q$p\E$/;
-  
+
       if ( $self->{ignore_class} ) {
           $self->{ignore_class} = [ $self->{ignore_class} ]
               unless ref $self->{ignore_class};
           %i_class = map { $_ => 1 } @{ $self->{ignore_class} };
       }
-  
+
       my $user_filter = $self->{frame_filter};
-  
+
       return sub {
           return 0 if grep { $_[0]{caller}[0] =~ /$_/ } @i_pack_re;
           return 0 if grep { $_[0]{caller}[0]->isa($_) } keys %i_class;
-  
+
           if ($user_filter) {
               return $user_filter->( $_[0] );
           }
-  
+
           return 1;
       };
   }
-  
+
   sub _add_frame {
       my $self = shift;
       my $c    = shift;
       my $p    = shift;
-  
+
       # eval and is_require are only returned when applicable under 5.00503.
       push @$c, ( undef, undef ) if scalar @$c == 6;
-  
+
       push @{ $self->{frames} },
           Devel::StackTrace::Frame->new(
           $c,
@@ -323,13 +323,13 @@ $fatpacked{"Devel/StackTrace.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
           $self->{indent}
           );
   }
-  
+
   sub next_frame {
       my $self = shift;
-  
+
       # reset to top if necessary.
       $self->{index} = -1 unless defined $self->{index};
-  
+
       my @f = $self->frames();
       if ( defined $f[ $self->{index} + 1 ] ) {
           return $f[ ++$self->{index} ];
@@ -339,15 +339,15 @@ $fatpacked{"Devel/StackTrace.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
           return undef;
       }
   }
-  
+
   sub prev_frame {
       my $self = shift;
-  
+
       my @f = $self->frames();
-  
+
       # reset to top if necessary.
       $self->{index} = scalar @f unless defined $self->{index};
-  
+
       if ( defined $f[ $self->{index} - 1 ] && $self->{index} >= 1 ) {
           return $f[ --$self->{index} ];
       }
@@ -356,339 +356,339 @@ $fatpacked{"Devel/StackTrace.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
           return undef;
       }
   }
-  
+
   sub reset_pointer {
       my $self = shift;
-  
+
       $self->{index} = undef;
   }
-  
+
   sub frames {
       my $self = shift;
-  
+
       if (@_) {
           die
               "Devel::StackTrace->frames() can only take Devel::StackTrace::Frame args\n"
               if grep { !$_->isa('Devel::StackTrace::Frame') } @_;
-  
+
           $self->{frames} = \@_;
       }
       else {
           $self->_make_frames() if $self->{raw};
       }
-  
+
       return @{ $self->{frames} };
   }
-  
+
   sub frame {
       my $self = shift;
       my $i    = shift;
-  
+
       return unless defined $i;
-  
+
       return ( $self->frames() )[$i];
   }
-  
+
   sub frame_count {
       my $self = shift;
-  
+
       return scalar( $self->frames() );
   }
-  
+
   sub as_string {
       my $self = shift;
       my $p    = shift;
-  
+
       my $st    = '';
       my $first = 1;
       foreach my $f ( $self->frames() ) {
           $st .= $f->as_string( $first, $p ) . "\n";
           $first = 0;
       }
-  
+
       return $st;
   }
-  
+
   {
       package    # hide from PAUSE
           Devel::StackTraceFrame;
-  
+
       our @ISA = 'Devel::StackTrace::Frame';
   }
-  
+
   1;
-  
+
   # ABSTRACT: An object representing a stack trace
-  
+
   __END__
-  
+
   =pod
-  
+
   =head1 NAME
-  
+
   Devel::StackTrace - An object representing a stack trace
-  
+
   =head1 VERSION
-  
+
   version 2.00
-  
+
   =head1 SYNOPSIS
-  
+
     use Devel::StackTrace;
-  
+
     my $trace = Devel::StackTrace->new();
-  
+
     print $trace->as_string(); # like carp
-  
+
     # from top (most recent) of stack to bottom.
     while ( my $frame = $trace->next_frame() ) {
         print "Has args\n" if $frame->hasargs();
     }
-  
+
     # from bottom (least recent) of stack to top.
     while ( my $frame = $trace->prev_frame() ) {
         print "Sub: ", $frame->subroutine(), "\n";
     }
-  
+
   =head1 DESCRIPTION
-  
+
   The C<Devel::StackTrace> module contains two classes, C,Devel::StackTrace> and
   L<Devel::StackTrace::Frame>. These objects encapsulate the information that
   can retrieved via Perl's C<caller()> function, as well as providing a simple
   interface to this data.
-  
+
   The C<Devel::StackTrace> object contains a set of C<Devel::StackTrace::Frame>
   objects, one for each level of the stack. The frames contain all the data
   available from C<caller()>.
-  
+
   This code was created to support my L<Exception::Class::Base> class (part of
   L<Exception::Class>) but may be useful in other contexts.
-  
+
   =encoding UTF-8
-  
+
   =head1 'TOP' AND 'BOTTOM' OF THE STACK
-  
+
   When describing the methods of the trace object, I use the words 'top' and
   'bottom'. In this context, the 'top' frame on the stack is the most recent
   frame and the 'bottom' is the least recent.
-  
+
   Here's an example:
-  
+
     foo();  # bottom frame is here
-  
+
     sub foo {
        bar();
     }
-  
+
     sub bar {
        Devel::StackTrace->new();  # top frame is here.
     }
-  
+
   =head1 METHODS
-  
+
   This class provide the following methods:
-  
+
   =head2 Devel::StackTrace->new(%named_params)
-  
+
   Returns a new Devel::StackTrace object.
-  
+
   Takes the following parameters:
-  
+
   =over 4
-  
+
   =item * frame_filter => $sub
-  
+
   By default, Devel::StackTrace will include all stack frames before the
   call to its constructor.
-  
+
   However, you may want to filter out some frames with more granularity
   than 'ignore_package' or 'ignore_class' allow.
-  
+
   You can provide a subroutine which is called with the raw frame data
   for each frame. This is a hash reference with two keys, "caller", and
   "args", both of which are array references. The "caller" key is the
   raw data as returned by Perl's C<caller()> function, and the "args"
   key are the subroutine arguments found in C<@DB::args>.
-  
+
   The filter should return true if the frame should be included, or
   false if it should be skipped.
-  
+
   =item * filter_frames_early => $boolean
-  
+
   If this parameter is true, C<frame_filter> will be called as soon as the
   stacktrace is created, and before refs are stringified (if
   C<unsafe_ref_capture> is not set), rather than being filtered lazily when
   L<Devel::StackTrace::Frame> objects are first needed.
-  
+
   This is useful if you want to filter based on the frame's arguments and want
   to be able to examine object properties, for example.
-  
+
   =item * ignore_package => $package_name OR \@package_names
-  
+
   Any frames where the package is one of these packages will not be on
   the stack.
-  
+
   =item * ignore_class => $package_name OR \@package_names
-  
+
   Any frames where the package is a subclass of one of these packages
   (or is the same package) will not be on the stack.
-  
+
   Devel::StackTrace internally adds itself to the 'ignore_package'
   parameter, meaning that the Devel::StackTrace package is B<ALWAYS>
   ignored. However, if you create a subclass of Devel::StackTrace it
   will not be ignored.
-  
+
   =item * skip_frames => $integer
-  
+
   This will cause this number of stack frames to be excluded from top of the
   stack trace. This prevents the frames from being captured at all, and applies
   before the C<frame_filter>, C<ignore_package>, or C<ignore_class> options,
   even with C<filter_frames_early>.
-  
+
   =item * unsafe_ref_capture => $boolean
-  
+
   If this parameter is true, then Devel::StackTrace will store
   references internally when generating stacktrace frames.
-  
+
   B<This option is very dangerous, and should never be used with exception
   objects>. Using this option will keep any objects or references alive past
   their normal lifetime, until the stack trace object goes out of scope. It can
   keep objects alive even after their C<DESTROY> sub is called, resulting it it
   being called multiple times on the same object.
-  
+
   If not set, Devel::StackTrace replaces any references with their stringified
   representation.
-  
+
   =item * no_args => $boolean
-  
+
   If this parameter is true, then Devel::StackTrace will not store caller
   arguments in stack trace frames at all.
-  
+
   =item * respect_overload => $boolean
-  
+
   By default, Devel::StackTrace will call C<overload::AddrRef()> to get
   the underlying string representation of an object, instead of
   respecting the object's stringification overloading. If you would
   prefer to see the overloaded representation of objects in stack
   traces, then set this parameter to true.
-  
+
   =item * max_arg_length => $integer
-  
+
   By default, Devel::StackTrace will display the entire argument for each
   subroutine call. Setting this parameter causes truncates each subroutine
   argument's string representation if it is longer than this number of
   characters.
-  
+
   =item * message => $string
-  
+
   By default, Devel::StackTrace will use 'Trace begun' as the message for the
   first stack frame when you call C<as_string>. You can supply an alternative
   message using this option.
-  
+
   =item * indent => $boolean
-  
+
   If this parameter is true, each stack frame after the first will start with a
   tab character, just like C<Carp::confess()>.
-  
+
   =back
-  
+
   =head2 $trace->next_frame()
-  
+
   Returns the next L<Devel::StackTrace::Frame> object on the stack, going
   down. If this method hasn't been called before it returns the first frame. It
   returns C<undef> when it reaches the bottom of the stack and then resets its
   pointer so the next call to C<< $trace->next_frame() >> or C<<
   $trace->prev_frame() >> will work properly.
-  
+
   =head2 $trace->prev_frame()
-  
+
   Returns the next L<Devel::StackTrace::Frame> object on the stack, going up. If
   this method hasn't been called before it returns the last frame. It returns
   undef when it reaches the top of the stack and then resets its pointer so the
   next call to C<< $trace->next_frame() >> or C<< $trace->prev_frame() >> will
   work properly.
-  
+
   =head2 $trace->reset_pointer
-  
+
   Resets the pointer so that the next call to C<< $trace->next_frame() >> or C<<
   $trace->prev_frame() >> will start at the top or bottom of the stack, as
   appropriate.
-  
+
   =head2 $trace->frames()
-  
+
   When this method is called with no arguments, it returns a list of
   L<Devel::StackTrace::Frame> objects. They are returned in order from top (most
   recent) to bottom.
-  
+
   This method can also be used to set the object's frames if you pass it a list
   of L<Devel::StackTrace::Frame> objects.
-  
+
   This is useful if you want to filter the list of frames in ways that are more
   complex than can be handled by the C<< $trace->filter_frames() >> method:
-  
+
     $stacktrace->frames( my_filter( $stacktrace->frames() ) );
-  
+
   =head2 $trace->frame($index)
-  
+
   Given an index, this method returns the relevant frame, or undef if there is
   no frame at that index. The index is exactly like a Perl array. The first
   frame is 0 and negative indexes are allowed.
-  
+
   =head2 $trace->frame_count()
-  
+
   Returns the number of frames in the trace object.
-  
+
   =head2 $trace->as_string(\%p)
-  
+
   Calls C<< $frame->as_string() >> on each frame from top to bottom, producing
   output quite similar to the Carp module's cluck/confess methods.
-  
+
   The optional C<\%p> parameter only has one option. The C<max_arg_length>
   parameter truncates each subroutine argument's string representation if it is
   longer than this number of characters.
-  
+
   =head1 SUPPORT
-  
+
   Please submit bugs to the CPAN RT system at
   http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Devel%3A%3AStackTrace
   or via email at bug-devel-stacktrace@rt.cpan.org.
-  
+
   =head1 AUTHOR
-  
+
   Dave Rolsky <autarch@urth.org>
-  
+
   =head1 CONTRIBUTORS
-  
+
   =for stopwords Dagfinn Ilmari Mannsåker David Cantrell Graham Knop Ricardo Signes
-  
+
   =over 4
-  
+
   =item *
-  
+
   Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
-  
+
   =item *
-  
+
   David Cantrell <david@cantrell.org.uk>
-  
+
   =item *
-  
+
   Graham Knop <haarg@haarg.org>
-  
+
   =item *
-  
+
   Ricardo Signes <rjbs@cpan.org>
-  
+
   =back
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is Copyright (c) 2000 - 2014 by David Rolsky.
-  
+
   This is free software, licensed under:
-  
+
     The Artistic License 2.0 (GPL Compatible)
-  
+
   =cut
 DEVEL_STACKTRACE
 
@@ -697,7 +697,7 @@ $fatpacked{"Devel/StackTrace/Frame.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   $Devel::StackTrace::Frame::VERSION = '2.00';
   use strict;
   use warnings;
-  
+
   # Create accessor routines
   BEGIN {
       no strict 'refs';
@@ -709,51 +709,51 @@ $fatpacked{"Devel/StackTrace/Frame.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
           *{$f} = sub { my $s = shift; return $s->{$f} };
       }
   }
-  
+
   {
       my @fields = (
           qw( package filename line subroutine hasargs wantarray
               evaltext is_require hints bitmask )
       );
-  
+
       sub new {
           my $proto = shift;
           my $class = ref $proto || $proto;
-  
+
           my $self = bless {}, $class;
-  
+
           @{$self}{@fields} = @{ shift() };
-  
+
           # fixup unix-style paths on win32
           $self->{filename} = File::Spec->canonpath( $self->{filename} );
-  
+
           $self->{args} = shift;
-  
+
           $self->{respect_overload} = shift;
-  
+
           $self->{max_arg_length} = shift;
-  
+
           $self->{message} = shift;
-  
+
           $self->{indent} = shift;
-  
+
           return $self;
       }
   }
-  
+
   sub args {
       my $self = shift;
-  
+
       return @{ $self->{args} };
   }
-  
+
   sub as_string {
       my $self  = shift;
       my $first = shift;
       my $p     = shift;
-  
+
       my $sub = $self->subroutine;
-  
+
       # This code stolen straight from Carp.pm and then tweaked.  All
       # errors are probably my fault  -dave
       if ($first) {
@@ -763,7 +763,7 @@ $fatpacked{"Devel/StackTrace/Frame.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
               : 'Trace begun';
       }
       else {
-  
+
           # Build a string, $sub, which names the sub-routine called.
           # This may also be "require ...", "eval '...' or "eval {...}"
           if ( my $eval = $self->evaltext ) {
@@ -778,7 +778,7 @@ $fatpacked{"Devel/StackTrace/Frame.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
           elsif ( $sub eq '(eval)' ) {
               $sub = 'eval {...}';
           }
-  
+
           # if there are any arguments in the sub-routine call, format
           # them according to the format variables defined earlier in
           # this file and join them onto the $sub sub-routine string
@@ -787,154 +787,154 @@ $fatpacked{"Devel/StackTrace/Frame.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
           #
           if ( my @a = $self->args ) {
               for (@a) {
-  
+
                   # set args to the string "undef" if undefined
                   $_ = "undef", next unless defined $_;
-  
+
                   # hack!
                   $_ = $self->Devel::StackTrace::_ref_to_string($_)
                       if ref $_;
-  
+
                   local $SIG{__DIE__};
                   local $@;
-  
+
                   eval {
                       my $max_arg_length
                           = exists $p->{max_arg_length}
                           ? $p->{max_arg_length}
                           : $self->{max_arg_length};
-  
+
                       if ( $max_arg_length
                           && length $_ > $max_arg_length ) {
                           substr( $_, $max_arg_length ) = '...';
                       }
-  
+
                       s/'/\\'/g;
-  
+
                       # 'quote' arg unless it looks like a number
                       $_ = "'$_'" unless /^-?[\d.]+$/;
-  
+
                       # print control/high ASCII chars as 'M-<char>' or '^<char>'
                       s/([\200-\377])/sprintf("M-%c",ord($1)&0177)/eg;
                       s/([\0-\37\177])/sprintf("^%c",ord($1)^64)/eg;
                   };
-  
+
                   if ( my $e = $@ ) {
                       $_ = $e =~ /malformed utf-8/i ? '(bad utf-8)' : '?';
                   }
               }
-  
+
               # append ('all', 'the', 'arguments') to the $sub string
               $sub .= '(' . join( ', ', @a ) . ')';
               $sub .= ' called';
           }
       }
-  
+
       # If the user opted into indentation (a la Carp::confess), pre-add a tab
       my $tab = $self->{indent} && !$first ? "\t" : q{};
-  
+
       return "${tab}$sub at " . $self->filename . ' line ' . $self->line;
   }
-  
+
   1;
-  
+
   # ABSTRACT: A single frame in a stack trace
-  
+
   __END__
-  
+
   =pod
-  
+
   =head1 NAME
-  
+
   Devel::StackTrace::Frame - A single frame in a stack trace
-  
+
   =head1 VERSION
-  
+
   version 2.00
-  
+
   =head1 DESCRIPTION
-  
+
   See L<Devel::StackTrace> for details.
-  
+
   =for Pod::Coverage new
-  
+
   =head1 METHODS
-  
+
   See Perl's C<caller()> documentation for more information on what these
   methods return.
-  
+
   =head2 $frame->package()
-  
+
   =head2 $frame->filename()
-  
+
   =head2 $frame->line()
-  
+
   =head2 $frame->subroutine()
-  
+
   =head2 $frame->hasargs()
-  
+
   =head2 $frame->wantarray()
-  
+
   =head2 $frame->evaltext()
-  
+
   Returns undef if the frame was not part of an eval.
-  
+
   =head2 $frame->is_require()
-  
+
   Returns undef if the frame was not part of a require.
-  
+
   =head2 $frame->args()
-  
+
   Returns the arguments passed to the frame.  Note that any arguments that are
   references are returned as references, not copies.
-  
+
   =head2 $frame->hints()
-  
+
   =head2 $frame->bitmask()
-  
+
   =head2 $frame->as_string()
-  
+
   Returns a string containing a description of the frame.
-  
+
   =head1 AUTHOR
-  
+
   Dave Rolsky <autarch@urth.org>
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is Copyright (c) 2000 - 2014 by David Rolsky.
-  
+
   This is free software, licensed under:
-  
+
     The Artistic License 2.0 (GPL Compatible)
-  
+
   =cut
 DEVEL_STACKTRACE_FRAME
 
 $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'EXCEPTION_CLASS';
   package Exception::Class;
   # git description: v1.38-8-gbef365d
-  
+
   $Exception::Class::VERSION = '1.39';
   use 5.008001;
-  
+
   use strict;
-  
+
   use Exception::Class::Base;
   use Scalar::Util qw(blessed);
-  
+
   our $BASE_EXC_CLASS;
   BEGIN { $BASE_EXC_CLASS ||= 'Exception::Class::Base'; }
-  
+
   our %CLASSES;
-  
+
   sub import {
       my $class = shift;
-  
+
       local $Exception::Class::Caller = caller();
-  
+
       my %c;
-  
+
       my %needs_parent;
       while ( my $subclass = shift ) {
           my $def = ref $_[0] ? shift : {};
@@ -942,19 +942,19 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
               = $def->{isa}
               ? ( ref $def->{isa} ? $def->{isa} : [ $def->{isa} ] )
               : [];
-  
+
           $c{$subclass} = $def;
       }
-  
+
       # We need to sort by length because if we check for keys in the
       # Foo::Bar:: stash, this creates a "Bar::" key in the Foo:: stash!
   MAKE_CLASSES:
       foreach my $subclass ( sort { length $a <=> length $b } keys %c ) {
           my $def = $c{$subclass};
-  
+
           # We already made this one.
           next if $CLASSES{$subclass};
-  
+
           {
               no strict 'refs';
               foreach my $parent ( @{ $def->{isa} } ) {
@@ -967,30 +967,30 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
                   }
               }
           }
-  
+
           $class->_make_subclass(
               subclass => $subclass,
               def      => $def || {},
           );
       }
-  
+
       foreach my $subclass ( keys %needs_parent ) {
-  
+
           # This will be used to spot circular references.
           my %seen;
           $class->_make_parents( \%needs_parent, $subclass, \%seen );
       }
   }
-  
+
   sub _make_parents {
       my $class    = shift;
       my $needs    = shift;
       my $subclass = shift;
       my $seen     = shift;
       my $child    = shift;    # Just for error messages.
-  
+
       no strict 'refs';
-  
+
       # What if someone makes a typo in specifying their 'isa' param?
       # This should catch it. Either it's been made because it didn't
       # have missing parents OR it's in our hash as needing a parent.
@@ -1002,54 +1002,54 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
           unless exists $needs->{$subclass}
           || $CLASSES{$subclass}
           || keys %{"$subclass\::"};
-  
+
       foreach my $c ( @{ $needs->{$subclass}{parents} } ) {
-  
+
           # It's been made
           next if $CLASSES{$c} || keys %{"$c\::"};
-  
+
           die "There appears to be some circularity involving $subclass\n"
               if $seen->{$subclass};
-  
+
           $seen->{$subclass} = 1;
-  
+
           $class->_make_parents( $needs, $c, $seen, $subclass );
       }
-  
+
       return if $CLASSES{$subclass} || keys %{"$subclass\::"};
-  
+
       $class->_make_subclass(
           subclass => $subclass,
           def      => $needs->{$subclass}{def}
       );
   }
-  
+
   sub _make_subclass {
       my $class = shift;
       my %p     = @_;
-  
+
       my $subclass = $p{subclass};
       my $def      = $p{def};
-  
+
       my $isa;
       if ( $def->{isa} ) {
           $isa = ref $def->{isa} ? join ' ', @{ $def->{isa} } : $def->{isa};
       }
       $isa ||= $BASE_EXC_CLASS;
-  
+
       my $version_name = 'VERSION';
-  
+
       my $code = <<"EOPERL";
   package $subclass;
-  
+
   use base qw($isa);
-  
+
   our \$$version_name = '1.1';
-  
+
   1;
-  
+
   EOPERL
-  
+
       if ( $def->{description} ) {
           ( my $desc = $def->{description} ) =~ s/([\\\'])/\\$1/g;
           $code .= <<"EOPERL";
@@ -1059,83 +1059,83 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   }
   EOPERL
       }
-  
+
       my @fields;
       if ( my $fields = $def->{fields} ) {
           @fields = UNIVERSAL::isa( $fields, 'ARRAY' ) ? @$fields : $fields;
-  
+
           $code
               .= "sub Fields { return (\$_[0]->SUPER::Fields, "
               . join( ", ", map { "'$_'" } @fields )
               . ") }\n\n";
-  
+
           foreach my $field (@fields) {
               $code .= sprintf( "sub %s { \$_[0]->{%s} }\n", $field, $field );
           }
       }
-  
+
       if ( my $alias = $def->{alias} ) {
           die "Cannot make alias without caller"
               unless defined $Exception::Class::Caller;
-  
+
           no strict 'refs';
           *{"$Exception::Class::Caller\::$alias"}
               = sub { $subclass->throw(@_) };
       }
-  
+
       if ( my $defaults = $def->{defaults} ) {
           $code
               .= "sub _defaults { return shift->SUPER::_defaults, our \%_DEFAULTS }\n";
           no strict 'refs';
           *{"$subclass\::_DEFAULTS"} = {%$defaults};
       }
-  
+
       eval $code;
-  
+
       die $@ if $@;
-  
+
       $CLASSES{$subclass} = 1;
   }
-  
+
   sub caught {
       my $e = $@;
-  
+
       return $e unless $_[1];
-  
+
       return unless blessed($e) && $e->isa( $_[1] );
       return $e;
   }
-  
+
   sub Classes { sort keys %Exception::Class::CLASSES }
-  
+
   1;
-  
+
   # ABSTRACT: A module that allows you to declare real exception classes in Perl
-  
+
   __END__
-  
+
   =pod
-  
+
   =head1 NAME
-  
+
   Exception::Class - A module that allows you to declare real exception classes in Perl
-  
+
   =head1 VERSION
-  
+
   version 1.39
-  
+
   =head1 SYNOPSIS
-  
+
     use Exception::Class (
         'MyException',
-  
+
         'AnotherException' => { isa => 'MyException' },
-  
+
         'YetAnotherException' => {
             isa         => 'AnotherException',
             description => 'These exceptions are related to IPC'
         },
-  
+
         'ExceptionWithFields' => {
             isa    => 'YetAnotherException',
             fields => [ 'grandiosity', 'quixotic' ],
@@ -1144,17 +1144,17 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
     );
     use Scalar::Util qw( blessed );
     use Try::Tiny;
-  
+
     try {
         MyException->throw( error => 'I feel funny.' );
     }
     catch {
         die $_ unless blessed $_ && $_->can('rethrow');
-  
+
         if ( $_->isa('Exception::Class') ) {
             warn $_->error, "\n", $_->trace->as_string, "\n";
             warn join ' ', $_->euid, $_->egid, $_->uid, $_->gid, $_->pid, $_->time;
-  
+
             exit;
         }
         elsif ( $_->isa('ExceptionWithFields') ) {
@@ -1169,108 +1169,108 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
             $_->rethrow;
         }
     };
-  
+
     # without Try::Tiny
-  
+
     eval { ... };
     if ( my $e = Exception::Class->caught() ) { ... }
-  
+
     # use an alias - without parens subroutine name is checked at
     # compile time
     throw_fields error => "No strawberry", grandiosity => "quite a bit";
-  
+
   =head1 DESCRIPTION
-  
+
   B<RECOMMENDATION 1>: If you are writing modern Perl code with L<Moose> or
   L<Moo> I highly recommend using L<Throwable> instead of this module.
-  
+
   B<RECOMMENDATION 2>: Whether or not you use L<Throwable>, you should use
   L<Try::Tiny>.
-  
+
   Exception::Class allows you to declare exception hierarchies in your
   modules in a "Java-esque" manner.
-  
+
   It features a simple interface allowing programmers to 'declare'
   exception classes at compile time. It also has a base exception
   class, L<Exception::Class::Base>, that can be easily extended.
-  
+
   It is designed to make structured exception handling simpler and
   better by encouraging people to use hierarchies of exceptions in their
   applications, as opposed to a single catch-all exception class.
-  
+
   This module does not implement any try/catch syntax. Please see the
   "OTHER EXCEPTION MODULES (try/catch syntax)" section for more
   information on how to get this syntax.
-  
+
   You will also want to look at the documentation for
   L<Exception::Class::Base>, which is the default base class for all
   exception objects created by this module.
-  
+
   =for Pod::Coverage     Classes
       caught
-  
+
   =head1 DECLARING EXCEPTION CLASSES
-  
+
   Importing C<Exception::Class> allows you to automagically create
   L<Exception::Class::Base> subclasses. You can also create subclasses
   via the traditional means of defining your own subclass with C<@ISA>.
   These two methods may be easily combined, so that you could subclass
   an exception class defined via the automagic import, if you desired
   this.
-  
+
   The syntax for the magic declarations is as follows:
-  
+
   'MANDATORY CLASS NAME' => \%optional_hashref
-  
+
   The hashref may contain the following options:
-  
+
   =over 4
-  
+
   =item * isa
-  
+
   This is the class's parent class. If this isn't provided then the
   class name in C<$Exception::Class::BASE_EXC_CLASS> is assumed to be
   the parent (see below).
-  
+
   This parameter lets you create arbitrarily deep class hierarchies.
   This can be any other L<Exception::Class::Base> subclass in your
   declaration I<or> a subclass loaded from a module.
-  
+
   To change the default exception class you will need to change the
   value of C<$Exception::Class::BASE_EXC_CLASS> I<before> calling
   C<import()>. To do this simply do something like this:
-  
+
     BEGIN { $Exception::Class::BASE_EXC_CLASS = 'SomeExceptionClass'; }
-  
+
   If anyone can come up with a more elegant way to do this please let me
   know.
-  
+
   CAVEAT: If you want to automagically subclass an
   L<Exception::Class::Base> subclass loaded from a file, then you
   I<must> compile the class (via use or require or some other magic)
   I<before> you import C<Exception::Class> or you'll get a compile time
   error.
-  
+
   =item * fields
-  
+
   This allows you to define additional attributes for your exception
   class. Any field you define can be passed to the C<throw()> or
   C<new()> methods as additional parameters for the constructor. In
   addition, your exception object will have an accessor method for the
   fields you define.
-  
+
   This parameter can be either a scalar (for a single field) or an array
   reference if you need to define multiple fields.
-  
+
   Fields will be inherited by subclasses.
-  
+
   =item * alias
-  
+
   Specifying an alias causes this class to create a subroutine of the
   specified name in the I<caller's> namespace. Calling this subroutine
   is equivalent to calling C<< <class>->throw(@_) >> for the given
   exception class.
-  
+
   Besides convenience, using aliases also allows for additional compile
   time checking. If the alias is called I<without parentheses>, as in
   C<throw_fields "an error occurred">, then Perl checks for the
@@ -1278,34 +1278,34 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   instead you do C<< ExceptionWithFields->throw(...) >>, then Perl
   checks the class name at runtime, meaning that typos may sneak
   through.
-  
+
   =item * description
-  
+
   Each exception class has a description method that returns a fixed
   string. This should describe the exception I<class> (as opposed to
   any particular exception object). This may be useful for debugging if
   you start catching exceptions you weren't expecting (particularly if
   someone forgot to document them) and you don't understand the error
   messages.
-  
+
   =back
-  
+
   The C<Exception::Class> magic attempts to detect circular class
   hierarchies and will die if it finds one. It also detects missing
   links in a chain, for example if you declare Bar to be a subclass of
   Foo and never declare Foo.
-  
+
   =head1 L<Try::Tiny>
-  
+
   If you are interested in adding try/catch/finally syntactic sugar to your code
   then I recommend you check out L<Try::Tiny>. This is a great module that helps
   you ignore some of the weirdness with C<eval> and C<$@>. Here's an example of
   how the two modules work together:
-  
+
     use Exception::Class ( 'My::Exception' );
     use Scalar::Util qw( blessed );
     use Try::Tiny;
-  
+
     try {
         might_throw();
     }
@@ -1317,55 +1317,55 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
             die $_;
         }
     };
-  
+
   Note that you B<cannot> use C<< Exception::Class->caught() >> with
   L<Try::Tiny>.
-  
+
   =head1 Catching Exceptions Without L<Try::Tiny>
-  
+
   C<Exception::Class> provides some syntactic sugar for catching
   exceptions in a safe manner:
-  
+
     eval {...};
-  
+
     if ( my $e = Exception::Class->caught('My::Error') ) {
         cleanup();
         do_something_with_exception($e);
     }
-  
+
   The C<caught()> method takes a class name and returns an exception
   object if the last thrown exception is of the given class, or a
   subclass of that class. If it is not given any arguments, it simply
   returns C<$@>.
-  
+
   You should B<always> make a copy of the exception object, rather than
   using C<$@> directly. This is necessary because if your C<cleanup()>
   function uses C<eval>, or calls something which uses it, then C<$@> is
   overwritten. Copying the exception preserves it for the call to
   C<do_something_with_exception()>.
-  
+
   Exception objects also provide a caught method so you can write:
-  
+
     if ( my $e = My::Error->caught() ) {
         cleanup();
         do_something_with_exception($e);
     }
-  
+
   =head2 Uncatchable Exceptions
-  
+
   Internally, the C<caught()> method will call C<isa()> on the exception
   object. You could make an exception "uncatchable" by overriding
   C<isa()> in that class like this:
-  
+
    package Exception::Uncatchable;
-  
+
    sub isa { shift->rethrow }
-  
+
   Of course, this only works if you always call C<< Exception::Class->caught()
   >> after an C<eval>.
-  
+
   =head1 USAGE RECOMMENDATION
-  
+
   If you're creating a complex system that throws lots of different
   types of exceptions, consider putting all the exception declarations
   in one place. For an app called Foo you might make a
@@ -1373,44 +1373,44 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   could just contain the code to make C<Exception::Class> do its
   automagic class creation. Doing this allows you to more easily see
   what exceptions you have, and makes it easier to keep track of them.
-  
+
   This might look something like this:
-  
+
     package Foo::Bar::Exceptions;
-  
+
     use Exception::Class (
         Foo::Bar::Exception::Senses =>
             { description => 'sense-related exception' },
-  
+
         Foo::Bar::Exception::Smell => {
             isa         => 'Foo::Bar::Exception::Senses',
             fields      => 'odor',
             description => 'stinky!'
         },
-  
+
         Foo::Bar::Exception::Taste => {
             isa         => 'Foo::Bar::Exception::Senses',
             fields      => [ 'taste', 'bitterness' ],
             description => 'like, gag me with a spoon!'
         },
-  
+
         ...
     );
-  
+
   You may want to create a real module to subclass
   L<Exception::Class::Base> as well, particularly if you want your
   exceptions to have more methods.
-  
+
   =head2 Subclassing Exception::Class::Base
-  
+
   As part of your usage of C<Exception::Class>, you may want to create
   your own base exception class which subclasses
   L<Exception::Class::Base>. You should feel free to subclass any of
   the methods documented above. For example, you may want to subclass
   C<new()> to add additional information to your exception objects.
-  
+
   =head1 Exception::Class FUNCTIONS
-  
+
   The C<Exception::Class> method offers one function, C<Classes()>,
   which is not exported. This method returns a list of the classes that
   have been created by calling the C<Exception::Class> import() method.
@@ -1419,51 +1419,51 @@ $fatpacked{"Exception/Class.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   note that if you simply define a subclass via the normal Perl method
   of setting C<@ISA> or C<use base>, then your subclass will not be
   included.
-  
+
   =head1 SUPPORT
-  
+
   Please submit bugs to the CPAN RT system at
   http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Exception%3A%3AClass or
   via email at bug-exception-class@rt.cpan.org.
-  
+
   =head1 DONATIONS
-  
+
   If you'd like to thank me for the work I've done on this module,
   please consider making a "donation" to me via PayPal. I spend a lot of
   free time creating free software, and would appreciate any support
   you'd care to offer.
-  
+
   Please note that B<I am not suggesting that you must do this> in order
   for me to continue working on this particular software. I will
   continue to do so, inasmuch as I have in the past, for as long as it
   interests me.
-  
+
   Similarly, a donation made in this way will probably not make me work
   on this software much more, unless I get so many donations that I can
   consider working on free software full time, which seems unlikely at
   best.
-  
+
   To donate, log into PayPal and send money to autarch@urth.org or use
   the button on this page:
   L<http://www.urth.org/~autarch/fs-donation.html>
-  
+
   =head1 AUTHOR
-  
+
   Dave Rolsky <autarch@urth.org>
-  
+
   =head1 CONTRIBUTOR
-  
+
   =for stopwords Ricardo Signes
-  
+
   Ricardo Signes <rjbs@cpan.org>
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is copyright (c) 2014 by David Rolsky.
-  
+
   This is free software; you can redistribute it and/or modify it under
   the same terms as the Perl 5 programming language system itself.
-  
+
   =cut
 EXCEPTION_CLASS
 
@@ -1472,26 +1472,26 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
   $Exception::Class::Base::VERSION = '1.39';
   use strict;
   use warnings;
-  
+
   use Class::Data::Inheritable 0.02;
   use Devel::StackTrace 2.00;
   use Scalar::Util qw( blessed );
-  
+
   use base qw(Class::Data::Inheritable);
-  
+
   BEGIN {
       __PACKAGE__->mk_classdata('Trace');
       __PACKAGE__->mk_classdata('UnsafeRefCapture');
-  
+
       __PACKAGE__->mk_classdata('NoContextInfo');
       __PACKAGE__->NoContextInfo(0);
-  
+
       __PACKAGE__->mk_classdata('RespectOverload');
       __PACKAGE__->RespectOverload(0);
-  
+
       __PACKAGE__->mk_classdata('MaxArgLength');
       __PACKAGE__->MaxArgLength(0);
-  
+
       sub NoRefs {
           my $self = shift;
           if (@_) {
@@ -1502,82 +1502,82 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
               return $self->UnsafeRefCapture();
           }
       }
-  
+
       sub Fields { () }
   }
-  
+
   use overload
-  
+
       # an exception is always true
       bool => sub { 1 }, '""' => 'as_string', fallback => 1;
-  
+
   # Create accessor routines
   BEGIN {
       my @fields = qw( message pid uid euid gid egid time trace );
-  
+
       foreach my $f (@fields) {
           my $sub = sub { my $s = shift; return $s->{$f}; };
-  
+
           no strict 'refs';
           *{$f} = $sub;
       }
       *error = \&message;
-  
+
       my %trace_fields = (
           package => 'package',
           file    => 'filename',
           line    => 'line',
       );
-  
+
       while ( my ( $f, $m ) = each %trace_fields ) {
           my $sub = sub {
               my $s = shift;
               return $s->{$f} if exists $s->{$f};
-  
+
               my $frame = $s->trace->frame(0);
-  
+
               return $s->{$f} = $frame ? $frame->$m() : undef;
           };
           no strict 'refs';
           *{$f} = $sub;
       }
   }
-  
+
   sub Classes { Exception::Class::Classes() }
-  
+
   sub throw {
       my $proto = shift;
-  
+
       $proto->rethrow if ref $proto;
-  
+
       die $proto->new(@_);
   }
-  
+
   sub rethrow {
       my $self = shift;
-  
+
       die $self;
   }
-  
+
   sub new {
       my $proto = shift;
       my $class = ref $proto || $proto;
-  
+
       my $self = bless {}, $class;
-  
+
       $self->_initialize(@_);
-  
+
       return $self;
   }
-  
+
   sub _initialize {
       my $self = shift;
       my %p = @_ == 1 ? ( error => $_[0] ) : @_;
-  
+
       $self->{message} = $p{message} || $p{error} || '';
-  
+
       $self->{show_trace} = $p{show_trace} if exists $p{show_trace};
-  
+
       if ( $self->NoContextInfo() ) {
           $self->{show_trace} = 0;
           $self->{package} = $self->{file} = $self->{line} = undef;
@@ -1591,18 +1591,18 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
           $self->{euid} = $>;
           $self->{gid}  = $(;
           $self->{egid} = $);
-  
+
           my @ignore_class   = (__PACKAGE__);
           my @ignore_package = 'Exception::Class';
-  
+
           if ( my $i = delete $p{ignore_class} ) {
               push @ignore_class, ( ref($i) eq 'ARRAY' ? @$i : $i );
           }
-  
+
           if ( my $i = delete $p{ignore_package} ) {
               push @ignore_package, ( ref($i) eq 'ARRAY' ? @$i : $i );
           }
-  
+
           $self->{trace} = Devel::StackTrace->new(
               ignore_class       => \@ignore_class,
               ignore_package     => \@ignore_package,
@@ -1611,11 +1611,11 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
               max_arg_length     => $self->MaxArgLength,
           );
       }
-  
+
       my %fields = map { $_ => 1 } $self->Fields;
       while ( my ( $key, $value ) = each %p ) {
           next if $key =~ /^(?:error|message|show_trace)$/;
-  
+
           if ( $fields{$key} ) {
               $self->{$key} = $value;
           }
@@ -1626,10 +1626,10 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
           }
       }
   }
-  
+
   sub context_hash {
       my $self = shift;
-  
+
       return {
           time => $self->{time},
           pid  => $self->{pid},
@@ -1639,53 +1639,53 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
           egid => $self->{egid},
       };
   }
-  
+
   sub field_hash {
       my $self = shift;
-  
+
       my $hash = {};
-  
+
       for my $field ( $self->Fields ) {
           $hash->{$field} = $self->$field;
       }
-  
+
       return $hash;
   }
-  
+
   sub description {
       return 'Generic exception';
   }
-  
+
   sub show_trace {
       my $self = shift;
-  
+
       return 0 unless $self->{trace};
-  
+
       if (@_) {
           $self->{show_trace} = shift;
       }
-  
+
       return exists $self->{show_trace} ? $self->{show_trace} : $self->Trace;
   }
-  
+
   sub as_string {
       my $self = shift;
-  
+
       my $str = $self->full_message;
       unless ( defined $str && length $str ) {
           my $desc = $self->description;
           $str = defined $desc
               && length $desc ? "[$desc]" : "[Generic exception]";
       }
-  
+
       $str .= "\n\n" . $self->trace->as_string
           if $self->show_trace;
-  
+
       return $str;
   }
-  
+
   sub full_message { $_[0]->{message} }
-  
+
   #
   # The %seen bit protects against circular inheritance.
   #
@@ -1693,387 +1693,387 @@ $fatpacked{"Exception/Class/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\
   sub isa {
       my ( $inheritor, $base ) = @_;
       $inheritor = ref($inheritor) if ref($inheritor);
-  
+
       my %seen;
-  
+
       no strict 'refs';
       my @parents = ( $inheritor, @{"$inheritor\::ISA"} );
       while ( my $class = shift @parents ) {
           return 1 if $class eq $base;
-  
+
           push @parents, grep { !$seen{$_}++ } @{"$class\::ISA"};
       }
       return 0;
   }
   EOF
-  
+
   sub caught {
       my $class = shift;
-  
+
       my $e = $@;
-  
+
       return unless defined $e && blessed($e) && $e->isa($class);
       return $e;
   }
-  
+
   1;
-  
+
   # ABSTRACT: A base class for exception objects
-  
+
   __END__
-  
+
   =pod
-  
+
   =head1 NAME
-  
+
   Exception::Class::Base - A base class for exception objects
-  
+
   =head1 VERSION
-  
+
   version 1.39
-  
+
   =head1 SYNOPSIS
-  
+
     use Exception::Class 'MyException';
-  
+
     eval { MyException->throw( error => 'I feel funny.' ) };
-  
+
     print $@->error();
-  
+
   =head1 DESCRIPTION
-  
+
   This class is the base class for all exceptions created by
   L<Exception::Class>. It provides a number of methods for getting
   information about the exception.
-  
+
   =for Pod::Coverage     Classes
       caught
       NoRefs
-  
+
   =head1 METHODS
-  
+
   =head2 MyException->Trace($boolean)
-  
+
   Each C<Exception::Class::Base> subclass can be set individually to
   include a stacktrace when the C<as_string> method is called. The
   default is to not include a stacktrace. Calling this method with a
   value changes this behavior. It always returns the current value
   (after any change is applied).
-  
+
   This value is inherited by any subclasses. However, if this value is
   set for a subclass, it will thereafter be independent of the value in
   C<Exception::Class::Base>.
-  
+
   Do not call this on the C<Exception::Class::Base> class directly or
   you'll change it for all exception classes that use
   L<Exception::Class>, including ones created in modules you don't
   control.
-  
+
   This is a class method, not an object method.
-  
+
   =head2 MyException->UnsafeRefCapture($boolean)
-  
+
   When a C<Devel::StackTrace> object is created, it walks through the
   stack and stores the arguments which were passed to each subroutine on
   the stack. If any of these arguments are references, then that means
   that the C<Devel::StackTrace> ends up increasing the ref count of these
   references, delaying their destruction.
-  
+
   Since C<Exception::Class::Base> uses C<Devel::StackTrace> internally,
   this method provides a way to tell C<Devel::StackTrace> not to store
   these references. Instead, C<Devel::StackTrace> replaces references
   with their stringified representation.
-  
+
   This method defaults to false. As with C<Trace()>, it is inherited by
   subclasses but setting it in a subclass makes it independent thereafter.
-  
+
   Do not call this on the C<Exception::Class::Base> class directly or
   you'll change it for all exception classes that use
   L<Exception::Class>, including ones created in modules you don't
   control.
-  
+
   =head2 MyException->RespectOverload($boolean)
-  
+
   When a C<Devel::StackTrace> object stringifies, by default it ignores
   stringification overloading on any objects being dealt with.
-  
+
   Since C<Exception::Class::Base> uses C<Devel::StackTrace> internally,
   this method provides a way to tell C<Devel::StackTrace> to respect
   overloading.
-  
+
   This method defaults to false. As with C<Trace()>, it is inherited by
   subclasses but setting it in a subclass makes it independent
   thereafter.
-  
+
   Do not call this on the C<Exception::Class::Base> class directly or
   you'll change it for all exception classes that use
   L<Exception::Class>, including ones created in modules you don't
   control.
-  
+
   =head2 MyException->MaxArgLength($boolean)
-  
+
   When a C<Devel::StackTrace> object stringifies, by default it displays
   the full argument for each function. This parameter can be used to
   limit the maximum length of each argument.
-  
+
   Since C<Exception::Class::Base> uses C<Devel::StackTrace> internally,
   this method provides a way to tell C<Devel::StackTrace> to limit the
   length of arguments.
-  
+
   This method defaults to 0. As with C<Trace()>, it is inherited by
   subclasses but setting it in a subclass makes it independent
   thereafter.
-  
+
   Do not call this on the C<Exception::Class::Base> class directly or
   you'll change it for all exception classes that use
   L<Exception::Class>, including ones created in modules you don't
   control.
-  
+
   =head2 MyException->Fields
-  
+
   This method returns the extra fields defined for the given class, as
   a list.
-  
+
   Do not call this on the C<Exception::Class::Base> class directly or
   you'll change it for all exception classes that use
   L<Exception::Class>, including ones created in modules you don't
   control.
-  
+
   =head2 MyException->throw( $message )
-  
+
   =head2 MyException->throw( message => $message )
-  
+
   =head2 MyException->throw( error => $error )
-  
+
   This method creates a new object with the given error message. If no
   error message is given, this will be an empty string. It then dies
   with this object as its argument.
-  
+
   This method also takes a C<show_trace> parameter which indicates
   whether or not the particular exception object being created should
   show a stacktrace when its C<as_string()> method is called. This
   overrides the value of C<Trace()> for this class if it is given.
-  
+
   The frames included in the trace can be controlled by the C<ignore_class>
   and C<ignore_package> parameters. These are passed directly to
   Devel::Stacktrace's constructor. See C<Devel::Stacktrace> for more details.
-  
+
   If only a single value is given to the constructor it is assumed to be
   the message parameter.
-  
+
   Additional keys corresponding to the fields defined for the particular
   exception subclass will also be accepted.
-  
+
   =head2 MyException->new(...)
-  
+
   This method takes the same parameters as C<throw()>, but instead of
   dying simply returns a new exception object.
-  
+
   This method is always called when constructing a new exception object
   via the C<throw()> method.
-  
+
   =head2 MyException->description()
-  
+
   Returns the description for the given C<Exception::Class::Base>
   subclass. The C<Exception::Class::Base> class's description is
   "Generic exception" (this may change in the future). This is also an
   object method.
-  
+
   =head2 $exception->rethrow()
-  
+
   Simply dies with the object as its sole argument. It's just syntactic
   sugar. This does not change any of the object's attribute values.
   However, it will cause C<caller()> to report the die as coming from
   within the C<Exception::Class::Base> class rather than where rethrow
   was called.
-  
+
   Of course, you always have access to the original stacktrace for the
   exception object.
-  
+
   =head2 $exception->message()
-  
+
   =head2 $exception->error()
-  
+
   Returns the error/message associated with the exception.
-  
+
   =head2 $exception->pid()
-  
+
   Returns the pid at the time the exception was thrown.
-  
+
   =head2 $exception->uid()
-  
+
   Returns the real user id at the time the exception was thrown.
-  
+
   =head2 $exception->gid()
-  
+
   Returns the real group id at the time the exception was thrown.
-  
+
   =head2 $exception->euid()
-  
+
   Returns the effective user id at the time the exception was thrown.
-  
+
   =head2 $exception->egid()
-  
+
   Returns the effective group id at the time the exception was thrown.
-  
+
   =head2 $exception->time()
-  
+
   Returns the time in seconds since the epoch at the time the exception
   was thrown.
-  
+
   =head2 $exception->package()
-  
+
   Returns the package from which the exception was thrown.
-  
+
   =head2 $exception->file()
-  
+
   Returns the file within which the exception was thrown.
-  
+
   =head2 $exception->line()
-  
+
   Returns the line where the exception was thrown.
-  
+
   =head2 $exception->context_hash()
-  
+
   Returns a hash reference with the following keys:
-  
+
   =over 4
-  
+
   =item * time
-  
+
   =item * pid
-  
+
   =item * uid
-  
+
   =item * euid
-  
+
   =item * gid
-  
+
   =item * egid
-  
+
   =back
-  
+
   =head2 $exception->field_hash()
-  
+
   Returns a hash reference where the keys are any fields defined for the
   exception class and the values are the values associated with the field in the
   given object.
-  
+
   =head2 $exception->trace()
-  
+
   Returns the trace object associated with the object.
-  
+
   =head2 $exception->show_trace($boolean)
-  
+
   This method can be used to set whether or not a stack trace is
   included when the as_string method is called or the object is
   stringified.
-  
+
   =head2 $exception->as_string()
-  
+
   Returns a string form of the error message (something like what you'd
   expect from die). If the class or object is set to show traces then
   then the full trace is also included. The result looks like
   C<Carp::confess()>.
-  
+
   =head2 $exception->full_message()
-  
+
   Called by the C<as_string()> method to get the message. By default,
   this is the same as calling the C<message()> method, but may be
   overridden by a subclass. See below for details.
-  
+
   =head1 LIGHTWEIGHT EXCEPTIONS
-  
+
   A lightweight exception is one which records no information about its context
   when it is created. This can be achieved by setting C<<
   $class->NoContextInfo() >> to a true value.
-  
+
   You can make this the default for a class of exceptions by setting it after
   creating the class:
-  
+
     use Exception::Class (
         'LightWeight',
         'HeavyWeight',
     );
-  
+
     LightWeight->NoContextInfo(1);
-  
+
   A lightweight exception does have a stack trace object, nor does it record the
   time, pid, uid, euid, gid, or egid. It only has a message.
-  
+
   =head1 OVERLOADING
-  
+
   C<Exception::Class::Base> objects are overloaded so that
   stringification produces a normal error message. This just calls the
   C<< $exception->as_string() >> method described above. This means
   that you can just C<print $@> after an C<eval> and not worry about
   whether or not its an actual object. It also means an application or
   module could do this:
-  
+
    $SIG{__DIE__} = sub { Exception::Class::Base->throw( error => join '', @_ ); };
-  
+
   and this would probably not break anything (unless someone was
   expecting a different type of exception object from C<die()>).
-  
+
   =head1 OVERRIDING THE as_string METHOD
-  
+
   By default, the C<as_string()> method simply returns the value
   C<message> or C<error> param plus a stack trace, if the class's
   C<Trace()> method returns a true value or C<show_trace> was set when
   creating the exception.
-  
+
   However, once you add new fields to a subclass, you may want to
   include those fields in the stringified error.
-  
+
   Inside the C<as_string()> method, the message (non-stack trace)
   portion of the error is generated by calling the C<full_message()>
   method. This can be easily overridden. For example:
-  
+
     sub full_message {
         my $self = shift;
-  
+
         my $msg = $self->message;
-  
+
         $msg .= " and foo was " . $self->foo;
-  
+
         return $msg;
     }
-  
+
   =head1 AUTHOR
-  
+
   Dave Rolsky <autarch@urth.org>
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is copyright (c) 2014 by David Rolsky.
-  
+
   This is free software; you can redistribute it and/or modify it under
   the same terms as the Perl 5 programming language system itself.
-  
+
   =cut
 EXCEPTION_CLASS_BASE
 
 $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE_WHICH';
   package File::Which;
-  
+
   use strict;
   use warnings;
   use Exporter   ();
   use File::Spec ();
-  
+
   # ABSTRACT: Perl implementation of the which utility as an API
   our $VERSION = '1.19'; # VERSION
-  
-  
+
+
   our @ISA       = 'Exporter';
   our @EXPORT    = 'which';
   our @EXPORT_OK = 'where';
-  
+
   use constant IS_VMS => ($^O eq 'VMS');
   use constant IS_MAC => ($^O eq 'MacOS');
   use constant IS_DOS => ($^O eq 'MSWin32' or $^O eq 'dos' or $^O eq 'os2');
   use constant IS_CYG => ($^O eq 'cygwin');
-  
+
   # For Win32 systems, stores the extensions used for
   # executable files
   # For others, the empty string is used
@@ -2094,16 +2094,16 @@ $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE
     # http://cygwin.com/cygwin-ug-net/using-specialnames.html#pathnames-exe
     push @PATHEXT, qw{.exe .com};
   }
-  
-  
+
+
   sub which {
     my ($exec) = @_;
-  
+
     return undef unless $exec;
-  
+
     my $all = wantarray;
     my @results = ();
-  
+
     # check for aliases first
     if ( IS_VMS ) {
       my $symbol = `SHOW SYMBOL $exec`;
@@ -2130,22 +2130,22 @@ $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE
         }
       }
     }
-  
+
     return $exec
             if !IS_VMS and !IS_MAC and !IS_DOS and $exec =~ /\// and -f $exec and -x $exec;
-  
+
     my @path = File::Spec->path;
     if ( IS_DOS or IS_VMS or IS_MAC ) {
       unshift @path, File::Spec->curdir;
     }
-  
+
     foreach my $base ( map { File::Spec->catfile($_, $exec) } @path ) {
       for my $ext ( @PATHEXT ) {
         my $file = $base.$ext;
-  
+
         # We don't want dirs (as they are -x)
         next if -d $file;
-  
+
         if (
           # Executable, normal case
           -x _
@@ -2172,70 +2172,70 @@ $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE
         }
       }
     }
-  
+
     if ( $all ) {
       return @results;
     } else {
       return undef;
     }
   }
-  
-  
+
+
   sub where {
     # force wantarray
     my @res = which($_[0]);
     return @res;
   }
-  
+
   1;
-  
+
   __END__
-  
+
   =pod
-  
+
   =encoding UTF-8
-  
+
   =head1 NAME
-  
+
   File::Which - Perl implementation of the which utility as an API
-  
+
   =head1 VERSION
-  
+
   version 1.19
-  
+
   =head1 SYNOPSIS
-  
+
    use File::Which;                  # exports which()
    use File::Which qw(which where);  # exports which() and where()
-   
+
    my $exe_path = which 'perldoc';
-   
+
    my @paths = where 'perl';
    # Or
    my @paths = which 'perl'; # an array forces search for all of them
-  
+
   =head1 DESCRIPTION
-  
+
   L<File::Which> finds the full or relative paths to executable programs on
   the system.  This is normally the function of C<which> utility.  C<which> is
   typically implemented as either a program or a built in shell command.  On
   some platforms, such as Microsoft Windows it is not provided as part of the
   core operating system.  This module provides a consistent API to this
   functionality regardless of the underlying platform.
-  
+
   The focus of this module is correctness and portability.  As a consequence
   platforms where the current directory is implicitly part of the search path
   such as Microsoft Windows will find executables in the current directory,
-  whereas on platforms such as UNIX where this is not the case executables 
+  whereas on platforms such as UNIX where this is not the case executables
   in the current directory will only be found if the current directory is
   explicitly added to the path.
-  
+
   If you need a portable C<which> on the command line in an environment that
   does not provide it, install L<App::pwhich> which provides a command line
   interface to this API.
-  
+
   =head2 Implementations
-  
+
   L<File::Which> searches the directories of the user's C<PATH> (the current
   implementation uses L<File::Spec#path> to determine the correct C<PATH>),
   looking for executable files having the name specified as a parameter to
@@ -2244,22 +2244,22 @@ $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE
   to identify them, C<File::Which> takes extra steps to assure that
   you will find the correct file (so for example, you might be searching for
   C<perl>, it'll try F<perl.exe>, F<perl.bat>, etc.)
-  
+
   =head3 Linux, *BSD and other UNIXes
-  
+
   There should not be any surprises here.  The current directory will not be
   searched unless it is explicitly added to the path.
-  
+
   =head3 Modern Windows (including NT, XP, Vista, 7, 8, 10 etc)
-  
+
   Windows NT has a special environment variable called C<PATHEXT>, which is used
   by the shell to look for executable files. Usually, it will contain a list in
   the form C<.EXE;.BAT;.COM;.JS;.VBS> etc. If C<File::Which> finds such an
   environment variable, it parses the list and uses it as the different
   extensions.
-  
+
   =head3 Cygwin
-  
+
   Cygwin provides a Unix-like environment for Microsoft Windows users.  In most
   ways it works like other Unix and Unix-like environments, but in a few key
   aspects it works like Windows.  As with other Unix environments, the current
@@ -2268,126 +2268,126 @@ $fatpacked{"File/Which.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'FILE
   be discovered even if they are not part of the query.  C<.COM> or extensions
   specified using the C<PATHEXT> environment variable will NOT be discovered
   without the fully qualified name, however.
-  
+
   =head3 Windows 95, 98, ME, MS-DOS, OS/2
-  
+
   This set of operating systems don't have the C<PATHEXT> variable, and usually
   you will find executable files there with the extensions C<.exe>, C<.bat> and
   (less likely) C<.com>. C<File::Which> uses this hardcoded list if it's running
   under Win32 but does not find a C<PATHEXT> variable.
-  
+
   As of 2015 none of these platforms are tested frequently (or perhaps ever),
   but the current maintainer is determined not to intentionally remove support
   for older operating systems.
-  
+
   =head3 VMS
-  
+
   Same case as Windows 9x: uses C<.exe> and C<.com> (in that order).
-  
+
   As of 2015 the current maintainer does not test on VMS, and is in fact not
   certain it has ever been tested on VMS.  If this platform is important to you
   and you can help me verify and or support it on that platform please contact
   me.
-  
+
   =head1 FUNCTIONS
-  
+
   =head2 which
-  
+
    my $path = which $short_exe_name;
    my @paths = which $short_exe_name;
-  
+
   Exported by default.
-  
+
   C<$short_exe_name> is the name used in the shell to call the program (for
   example, C<perl>).
-  
+
   If it finds an executable with the name you specified, C<which()> will return
   the absolute path leading to this executable (for example, F</usr/bin/perl> or
   F<C:\Perl\Bin\perl.exe>).
-  
+
   If it does I<not> find the executable, it returns C<undef>.
-  
+
   If C<which()> is called in list context, it will return I<all> the
   matches.
-  
+
   =head2 where
-  
+
    my @paths = where $short_exe_name;
-  
+
   Not exported by default.
-  
+
   Same as L</which> in array context. Same as the
   C<where> utility, will return an array containing all the path names
   matching C<$short_exe_name>.
-  
+
   =head1 CAVEATS
-  
+
   This module has no non-core requirements for Perl 5.6.2 and better.
-  
-  This module is fully supported back to Perl 5.8.1.  It may work on 5.8.0.  
+
+  This module is fully supported back to Perl 5.8.1.  It may work on 5.8.0.
   It should work on Perl 5.6.x and I may even test on 5.6.2.  I will accept
   patches to maintain compatibility for such older Perls, but you may
   need to fix it on 5.6.x / 5.8.0 and send me a patch.
-  
+
   Not tested on VMS although there is platform specific code
   for those. Anyone who haves a second would be very kind to send me a
   report of how it went.
-  
+
   =head1 SUPPORT
-  
+
   Bugs should be reported via the GitHub issue tracker
-  
+
   L<https://github.com/plicease/File-Which/issues>
-  
+
   For other issues, contact the maintainer.
-  
+
   =head1 SEE ALSO
-  
+
   =over 4
-  
+
   =item L<pwhich>, L<App::pwhich>
-  
+
   Command line interface to this module.
-  
+
   =item L<IPC::Cmd>
-  
+
   Comes with a C<can_run> function with slightly different semantics that
   the traditional UNIX where.  It will find executables in the current
   directory, even though the current directory is not searched for by
   default on Unix.
-  
+
   =item L<Devel::CheckBin>
-  
+
   This module purports to "check that a command is available", but does not
   provide any documentation on how you might use it.
-  
+
   =back
-  
+
   =head1 AUTHORS
-  
+
   =over 4
-  
+
   =item *
-  
+
   Per Einar Ellefsen <pereinar@cpan.org>
-  
+
   =item *
-  
+
   Adam Kennedy <adamk@cpan.org>
-  
+
   =item *
-  
+
   Graham Ollis <plicease@cpan.org>
-  
+
   =back
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is copyright (c) 2002 by Per Einar Ellefsen <pereinar@cpan.org>.
-  
+
   This is free software; you can redistribute it and/or modify it under
   the same terms as the Perl 5 programming language system itself.
-  
+
   =cut
 FILE_WHICH
 
@@ -2398,16 +2398,16 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   package Getopt::Lucid;
   # ABSTRACT: Clear, readable syntax for command line processing
   our $VERSION = '1.05'; # VERSION
-  
+
   our @EXPORT_OK = qw(Switch Counter Param List Keypair);
   our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
   our @ISA = qw( Exporter );
-  
+
   use Carp;
   use Exporter ();
   use Getopt::Lucid::Exception;
   use Storable 2.16 qw(dclone);
-  
+
   # Definitions
   my $VALID_STARTCHAR = "a-zA-Z0-9";
   my $VALID_CHAR      = "a-zA-Z0-9_-";
@@ -2417,10 +2417,10 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   my $VALID_NAME      = qr/$VALID_LONG|$VALID_SHORT|$VALID_BARE/;
   my $SHORT_BUNDLE    = qr/-[$VALID_STARTCHAR]{2,}/;
   my $NEGATIVE        = qr/(?:--)?no-/;
-  
+
   my @valid_keys = qw( name type default nocase valid needs canon );
   my @valid_types = qw( switch counter parameter list keypair);
-  
+
   sub Switch  {
       return bless { name => shift, type => 'switch' },
                    "Getopt::Lucid::Spec";
@@ -2444,11 +2444,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       $self->{valid} = [ @_ ] if scalar @_;
       return bless $self, "Getopt::Lucid::Spec";
   }
-  
+
   package
     Getopt::Lucid::Spec;
   $Getopt::Lucid::Spec::VERSION = $Getopt::Lucid::VERSION;
-  
+
   # alternate way to specify validation
   sub valid {
       my $self = shift;
@@ -2457,7 +2457,7 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       $self->{valid} = $self->{type} eq 'keypair' ? [ @_ ] : shift;
       return $self;
   }
-  
+
   sub default {
       my $self = shift;
       my $type = $self->{type};
@@ -2480,19 +2480,19 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       return $self
   };
-  
+
   sub anycase { my $self = shift; $self->{nocase}=1; return $self };
-  
+
   sub needs { my $self = shift; $self->{needs}=[@_]; return $self };
-  
+
   package Getopt::Lucid;
-  
+
   #--------------------------------------------------------------------------#
   # new()
   #--------------------------------------------------------------------------#
-  
+
   my @params = qw/strict target/;
-  
+
   sub new {
       my ($class, $spec, $target) = @_;
       my $args = ref($_[-1]) eq 'HASH' ? pop(@_) : {};
@@ -2510,11 +2510,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       $self->{seen}{$_} = 0 for keys %{$self->{spec}};
       return $self;
   }
-  
+
   #--------------------------------------------------------------------------#
   # append_defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub append_defaults {
       my $self = shift;
       my %append =
@@ -2559,21 +2559,21 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       _recalculate_options($self);
       return $self->options;
   }
-  
+
   #--------------------------------------------------------------------------#
   # defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub defaults {
       my ($self) = @_;
       return %{dclone($self->{default})};
   }
-  
-  
+
+
   #--------------------------------------------------------------------------#
   # getopt()
   #--------------------------------------------------------------------------#
-  
+
   sub getopt {
       my ($self,$spec,$target) = @_;
       if ( $self eq 'Getopt::Lucid' ) {
@@ -2611,18 +2611,18 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       @{$self->{target}} = (@passthrough, @{$self->{target}});
       return $self;
   }
-  
+
   BEGIN { *getopts = \&getopt }; # handy alias
-  
+
   #--------------------------------------------------------------------------#
   # validate
   #--------------------------------------------------------------------------#
-  
+
   sub validate {
     my ($self, $arg) = @_;
     throw_usage("Getopt::Lucid->validate() takes a hashref argument")
       if $arg && ref($arg) ne 'HASH';
-  
+
     if ( $arg && exists $arg->{requires} ) {
       my $requires = $arg->{requires};
       throw_usage("'validate' argument 'requires' must be an array reference")
@@ -2632,16 +2632,16 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
               if ( ! $self->{seen}{$p} );
       }
     }
-  
+
     _check_prereqs($self);
-  
+
     return $self;
   }
-  
+
   #--------------------------------------------------------------------------#
   # merge_defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub merge_defaults {
       my $self = shift;
       my %merge =
@@ -2679,30 +2679,30 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       _recalculate_options($self);
       return $self->options;
   }
-  
+
   #--------------------------------------------------------------------------#
   # names()
   #--------------------------------------------------------------------------#
-  
+
   sub names {
       my ($self) = @_;
       return values %{$self->{strip}};
   }
-  
-  
+
+
   #--------------------------------------------------------------------------#
   # options()
   #--------------------------------------------------------------------------#
-  
+
   sub options {
       my ($self) = @_;
       return %{dclone($self->{options})};
   }
-  
+
   #--------------------------------------------------------------------------#
   # replace_defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub replace_defaults {
       my $self = shift;
       my %replace =
@@ -2747,22 +2747,22 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       _recalculate_options($self);
       return $self->options;
   }
-  
+
   #--------------------------------------------------------------------------#
   # reset_defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub reset_defaults {
       my ($self) = @_;
       _set_defaults($self);
       _recalculate_options($self);
       return $self->options;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _check_prereqs()
   #--------------------------------------------------------------------------#
-  
+
   sub _check_prereqs {
       my ($self) = @_;
       for my $key ( keys %{$self->{seen}} ) {
@@ -2775,39 +2775,39 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           }
       }
   }
-  
+
   #--------------------------------------------------------------------------#
   # _counter()
   #--------------------------------------------------------------------------#
-  
+
   sub _counter {
       my ($self, $arg, $val, $neg) = @_;
       throw_argv("Counter option can't take a value: $self->{spec}{$arg}{canon}=$val")
           if defined $val;
       push @{$self->{parsed}}, [ $arg, 1, $neg ];
   }
-  
+
   #--------------------------------------------------------------------------#
   # _find_arg()
   #--------------------------------------------------------------------------#
-  
+
   sub _find_arg {
       my ($self, $arg) = @_;
-  
+
       $arg =~ s/^-*// unless $self->{strict};
       return $self->{alias_hr}{$arg} if exists $self->{alias_hr}{$arg};
-  
+
       for ( keys %{$self->{alias_nocase}} ) {
           return $self->{alias_nocase}{$_} if $arg =~ /^$_$/i;
       }
-  
+
       return;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _keypair()
   #--------------------------------------------------------------------------#
-  
+
   sub _keypair {
       my ($self, $arg, $val, $neg) = @_;
       my ($key, $data);
@@ -2819,7 +2819,7 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           if (! defined $val && ! defined $value) {
               throw_argv("Option '$self->{spec}{$arg}{canon}' requires a value");
           }
-  
+
           throw_argv("Badly formed keypair for '$self->{spec}{$arg}{canon}'")
               unless $value =~ /[^=]+=.+/;
           ($key, $data) = ( $value =~ /^([^=]*)=(.*)$/ ) ;
@@ -2829,11 +2829,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       push @{$self->{parsed}}, [ $arg, [ $key, $data ], $neg ];
   }
-  
+
   #--------------------------------------------------------------------------#
   # _list()
   #--------------------------------------------------------------------------#
-  
+
   sub _list {
       my ($self, $arg, $val, $neg) = @_;
       my $value;
@@ -2848,7 +2848,7 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
               }
               $value =~ s/^$NEGATIVE(.*)$/$1/;
           }
-  
+
           throw_argv("Ambiguous value for $self->{spec}{$arg}{canon} could be option: $value")
               if ! defined $val and _find_arg($self, $value);
           throw_argv("Invalid list option $self->{spec}{$arg}{canon} = $value")
@@ -2856,11 +2856,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       push @{$self->{parsed}}, [ $arg, $value, $neg ];
   }
-  
+
   #--------------------------------------------------------------------------#
   # _parameter()
   #--------------------------------------------------------------------------#
-  
+
   sub _parameter {
       my ($self, $arg, $val, $neg) = @_;
       my $value;
@@ -2883,11 +2883,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       push @{$self->{parsed}}, [ $arg, $value, $neg ];
   }
-  
+
   #--------------------------------------------------------------------------#
   # _parse_spec()
   #--------------------------------------------------------------------------#
-  
+
   sub _parse_spec {
       my ($self) = @_;
       my $spec = $self->{raw_spec};
@@ -2906,11 +2906,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       _validate_prereqs($self);
   }
-  
+
   #--------------------------------------------------------------------------#
   # _recalculate_options()
   #--------------------------------------------------------------------------#
-  
+
   sub _recalculate_options {
       my ($self) = @_;
       my %result;
@@ -2956,11 +2956,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       return $self->{options} = \%result;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _regex_or_code
   #--------------------------------------------------------------------------#
-  
+
   sub _regex_or_code {
       my ($value,$valid) = @_;
       return 1 unless defined $valid;
@@ -2971,11 +2971,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           return $value =~ /^$valid$/;
       }
   }
-  
+
   #--------------------------------------------------------------------------#
   # _set_defaults()
   #--------------------------------------------------------------------------#
-  
+
   sub _set_defaults {
       my ($self) = @_;
       my %default;
@@ -3004,11 +3004,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       $self->{default} = \%default;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _split_equals()
   #--------------------------------------------------------------------------#
-  
+
   sub _split_equals {
       my ($self,$raw) = @_;
       my ($arg,$val);
@@ -3020,11 +3020,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       return ($arg, $val);
   }
-  
+
   #--------------------------------------------------------------------------#
   # _switch()
   #--------------------------------------------------------------------------#
-  
+
   sub _switch {
       my ($self, $arg, $val, $neg) = @_;
       throw_argv("Switch can't take a value: $self->{spec}{$arg}{canon}=$val")
@@ -3035,11 +3035,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       push @{$self->{parsed}}, [ $arg, 1, $neg ];
   }
-  
+
   #--------------------------------------------------------------------------#
   # _unbundle()
   #--------------------------------------------------------------------------#
-  
+
   sub _unbundle {
       my ($self,$arg, $val) = @_;
       if ( $arg =~ /^$SHORT_BUNDLE$/ ) {
@@ -3053,11 +3053,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       }
       return 0;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _validate_prereqs()
   #--------------------------------------------------------------------------#
-  
+
   sub _validate_prereqs {
       my ($self) = @_;
       for my $key ( keys %{$self->{spec}} ) {
@@ -3072,12 +3072,12 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           $self->{spec}{$key}{needs} = \@prereq;
       }
   }
-  
-  
+
+
   #--------------------------------------------------------------------------#
   # _validate_spec()
   #--------------------------------------------------------------------------#
-  
+
   sub _validate_spec {
       my ($self,$names,$details) = @_;
       for my $name ( @$names ) {
@@ -3105,11 +3105,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           "'$type' is not a valid option type"
       ) unless grep { $type eq $_ } @valid_types;
   }
-  
+
   #--------------------------------------------------------------------------#
   # _validate_value()
   #--------------------------------------------------------------------------#
-  
+
   sub _validate_value {
       my ($self, $value, $valid) = @_;
       return 1 unless defined $valid;
@@ -3130,11 +3130,11 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
           return _regex_or_code($value, $valid);
       }
   }
-  
+
   #--------------------------------------------------------------------------#
   # AUTOLOAD()
   #--------------------------------------------------------------------------#
-  
+
   sub AUTOLOAD {
       my $self = shift;
       my $name = $Getopt::Lucid::AUTOLOAD;
@@ -3157,17 +3157,17 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
                   last SEARCH;
               }
           }
-  
+
           # throw if no valid option was found
           throw_usage("Can't $action unknown option '$maybe_opt'")
               if ! $opt;
-  
+
           # handle the accessor if an option was found
           if ($action eq "set") {
               $self->{options}{$opt} =
                   ref($self->{options}{$opt}) eq 'ARRAY' ? [@_] :
                   ref($self->{options}{$opt}) eq 'HASH'  ? {@_} : shift;
-  
+
           }
           my $ans = $self->{options}{$opt};
           return ref($ans) eq 'ARRAY' ? @$ans :
@@ -3176,29 +3176,29 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
       my $super = "SUPER::$name";
       $self->$super(@_);
   }
-  
+
   1; # modules must be true
-  
+
   __END__
-  
+
   =pod
-  
+
   =encoding utf-8
-  
+
   =head1 NAME
-  
+
   Getopt::Lucid - Clear, readable syntax for command line processing
-  
+
   =head1 VERSION
-  
+
   version 1.05
-  
+
   =head1 SYNOPSIS
-  
+
      use Getopt::Lucid qw( :all );
-   
+
      # basic option specifications with aliases
-   
+
      @specs = (
        Switch("version|V"),
        Counter("verbose|v"),
@@ -3207,17 +3207,17 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
        Keypair("define"),
        Switch("help|h")
      );
-   
+
      $opt = Getopt::Lucid->getopt( \@specs )->validate;
-   
+
      $verbosity = $opt->get_verbose;
      @libs = $opt->get_lib;
      %defs = $opt->get_define;
-   
+
      %all_options = $opt->options;
-   
+
      # advanced option specifications
-   
+
      @adv_spec = (
        Param("input"),
        Param("mode")->default("tcp"),     # defaults
@@ -3228,81 +3228,81 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
      );
      $opt = Getopt::Lucid->getopt( \@adv_spec );
      $opt->validate( 'requires' => ['input'] );
-   
+
      # example with a config file
-   
+
      $opt = Getopt::Lucid->getopt( \@adv_spec );
      use Config::Std;
      if ( -r $opt->get_config ) {
        read_config( $opt->get_config() => my %config_hash );
        $opt->merge_defaults( $config_hash{''} );
      }
-  
+
   =head1 DESCRIPTION
-  
+
   The goal of this module is providing good code readability and clarity of
   intent for command-line option processing.  While readability is a subjective
   standard, Getopt::Lucid relies on a more verbose, plain-English option
   specification as compared against the more symbolic approach of Getopt::Long.
   Key features include:
-  
+
   =over
-  
+
   =item *
-  
+
   Five option types: switches, counters, parameters, lists, and key pairs
-  
+
   =item *
-  
+
   Three option styles: long, short (including bundled), and bare (without
   dashes)
-  
+
   =item *
-  
+
   Specification of defaults, required options and option dependencies
-  
+
   =item *
-  
+
   Validation of options with regexes or subroutines
-  
+
   =item *
-  
+
   Negation of options on the command line
-  
+
   =item *
-  
+
   Support for parsing any array, not just the default C<<< @ARGV >>>
-  
+
   =item *
-  
+
   Incorporation of external defaults (e.g. from a config file) with
   user control of precedence
-  
+
   =back
-  
+
   =for Pod::Coverage getopts
-  
+
   =head1 USAGE
-  
+
   =head2 Option Styles, Naming and "Strictness"
-  
+
   Getopt::Lucid support three kinds of option styles: long-style ("--foo"),
   short-style ("-f") and bareword style ("foo").  Short-style options
   are automatically unbundled during command line processing if a single dash
   is followed by more than one letter (e.g. C<<< -xzf >>> becomes C<<< -x -z -f >>> ).
-  
+
   Each option is identified in the specification with a string consisting of the
   option "name" followed by zero or more "aliases", with any alias (and each
   subsequent alias) separated by a vertical bar character.  E.g.:
-  
+
      "lib|l|I" means name "lib", alias "l" and alias "I"
-  
+
   Names and aliases must begin with an alphanumeric character, but subsequently
   may also include both underscore and dash.  (E.g. both "input-file" and
   "input_file" are valid.)  While names and aliases are interchangeable
   when provided on the command line, the "name" portion is used with the accessors
   for each option (see L</Accessors and Mutators>).
-  
+
   Any of the names and aliases in the specification may be given in any of the
   three styles.  By default, Getopt::Lucid works in "magic" mode, in which option
   names or aliases may be specified with or without leading dashes, and will be
@@ -3310,117 +3310,117 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   Single-character names or aliases may be read with no dash, one dash or two
   dashes.  Multi-character names or aliases must have either no dashes or two
   dashes.  E.g.:
-  
+
   =over
-  
+
   =item *
-  
+
   Both "foo" and "--foo" as names in the specification may be read from
   the command line as either "--foo" or "foo"
-  
+
   =item *
-  
+
   The specification name "f" may be read from the command line as "--f",
   "-f", or just "f"
-  
+
   =back
-  
+
   In practice, this means that the specification need not use dashes, but if
   used on the command line, they will be treated appropriately.
-  
+
   Alternatively, Getopt::Lucid can operate in "strict" mode by setting
   the CE<lt>strictE<gt> parameter to a true value.  In strict mode, option names
   and aliases may still be specified in any of the three styles, but they
   will only be parsed from the command line if they are used in exactly
   the same style.  E.g., given the name and alias "--helpE<verbar>-h", only "--help"
   and "-h" are valid for use on the command line.
-  
+
   =head2 Option Specification Constructors
-  
+
   Options specifications are provided to Getopt::Lucid in an array.  Entries in
   the array must be created with one of several special constructor functions
   that return a specification object.  These constructor functions may be
   imported either individually or as a group using the import tag ":all" (e.g.
   C<<< use Getopt::Lucid qw(:all); >>>).
-  
+
   The form of the constructor is:
-  
+
     TYPE( NAME_ARGUMENT );
-  
+
   The constructor function name indicates the type of option.  The name argument
   is a string with the names and aliases separated by vertical bar characters.
-  
+
   The five option specification constructors are:
-  
+
   =head3 Switch()
-  
+
   A trueE<sol>false value.  Defaults to false.  The appearance
   of an option of this type on the command line sets it to true.
-  
+
   =head3 Counter()
-  
+
   A numerical counter.  Defaults to 0.  The appearance
   of an option of this type on the command line increments the counter by one.
-  
+
   =head3 Param()
-  
+
   A variable taking an argument.  Defaults to "" (the empty
   string).  When an option of this type appears on the command line, the value of
   the option is set in one of two ways -- appended with an equals sign or from the
   next argument on the command line:
-  
+
      --name=value
      --name value
-  
+
   In the case where white space is used to separate the option name and the
   value, if the value looks like an option, an exception will be thrown:
-  
+
      --name --value        # throws an exception
-  
+
   =head3 List()
-  
+
   This is like C<<< Param() >>> but arguments are pushed onto a list.
   The default list is empty.
-  
+
   =head3 Keypair()
-  
+
   A variable taking an argument pair, which are added
   to a hash.  Arguments are handled as with C<<< Param() >>>, but the argument itself
   must have a key and value joined by an equals sign.
-  
+
      --name=key=value
      --name key=value
-  
+
   =head2 Option modifiers
-  
+
   An option specification can be further modified with the following methods,
   each of which return the object modified so that modifier chaining is
   possible.  E.g.:
-  
+
      @spec = (
        Param("input")->default("/dev/random")->needs("output"),
        Param("output)->default("/dev/null"),
      );
-  
+
   =head3 valid()
-  
+
   Sets the validation parameter(s) for an option.
-  
+
      @spec = (
        Param("port")->valid(qr/\d+/),          # regex validation
        Param("config")->valid(sub { -r }),     # custom validation
        Keypair("define")
          ->valid(\&_valid_key, \&valid_value), # keypairs take two
      );
-  
+
   See the L</Validation> section, below, for more.
-  
+
   =head3 default()
-  
+
   Changes the default for the option to the argument(s) of
   C<<< default() >>>.  List and hashes can take either a list or a reference to an
   array or hash, respectively.
-  
+
      @spec = (
        Switch("debug")->default(1),
        Counter("verbose")->default(3),
@@ -3428,88 +3428,88 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
        List("dirs")->default(qw( /var /home )),
        Keypair("define")->default( arch => "i386" ),
      );
-  
+
   =head3 needs()
-  
+
   Takes as an argument a list of option names or aliases of
   dependencies.  If the option this modifies appears on the command line, each of
   the options given as an argument must appear on the command line as well or an
   exception is thrown.
-  
+
      @spec = (
        Param("input")->needs("output"),
        Param("output),
      );
-  
+
   =head3 anycase()
-  
+
   Indicates that the associated option namesE<sol>aliases may appear
   on the command line in lowercase, uppercase, or any mixture of the two.  No
   argument is needed.
-  
+
      @spec = (
        Switch("help|h")->anycase(),    # "Help", "HELP", etc.
      );
-  
+
   =head2 Validation
-  
+
   Validation happens in two stages.  First, individual parameters may have
   validation criteria added to them.  Second, the parsed options object may be
   validated by checking that all requirements collectively are met.
-  
+
   =head3 Parameter validation
-  
+
   The Param, List, and Keypair option types may be provided an optional
   validation specification.  Values provided on the command line will be
   validated according to the specification or an exception will be thrown.
-  
+
   A validation specification can be either a regular expression, or a reference
   to a subroutine.  Keypairs take up to two validation specifiers.  The first is
   applied to keys and the second is applied to values; either can be left undef
   to ignore validation.  (More complex validation of specific values for specific
   keys must be done manually.)
-  
+
   Validation is also applied to default values provided via the C<<< default() >>>
   modifier or later modified with C<<< append_defaults >>>, C<<< merge_defaults >>>, or
   C<<< replace_defaults >>>.  This ensures internal consistency.
-  
+
   If no default is explicitly provided, validation is only applied if the option
   appears on the command line. (In other words, the built-in defaults are always
   considered valid if the option does not appear.)  If this is not desired, the
   C<<< required >>> option to the C<<< validate >>> method should be used to force users to
   provide an explicit value.
-  
+
      # Must be provided and is thus always validated
      @spec = ( Param("width")->valid(qr/\d+/) );
      $opt = Getopt::Lucid->getopt(\@spec);
      $opt->validate( {requires => ['width']} );
-  
+
   For validation subroutines, the value found on the command line is passed as
   the first element of C<<< @_ >>>, and C<<< $_ >>> is also set equal to the first element.
   (N.B. Changing C<<< $_ >>> will not change the value that is captured.)  The value
   validates if the subroutine returns a true value.
-  
+
   For validation with regular expressions, consider using L<Regexp::Common>
   for a ready library of validation options.
-  
+
   Older versions of Getopt::Lucid used validation arguments provided in the Spec
   constructor.  This is still supported, but is deprecated and discouraged. It
   may be removed in a future version of Getopt::Lucid.
-  
+
      # deprecated
      Param("height", qr/\d+/)
-  
+
   =head3 Options object validation
-  
+
   The C<<< validate >>> method should be called on the result of C<<< getopt >>>.  This will
   check that all parameter prerequisites defined by C<<< needs >>> have been met.  It
   also takes a hashref of arguments.  The optional C<<< requires >>> argument gives an
   arrayref of parameters that must exist.
-  
+
   The reason that object validation is done separate from C<<< getopt >>> is to allow
   for better control over different options that might be required or to allow
   some dependencies (i.e. from C<<< needs >>>) to be met via a configuration file.
-  
+
      @spec = (
        Param("action")->needs(qw/user password/),
        Param("user"),
@@ -3518,31 +3518,31 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
      $opt = Getopt::Lucid->getopt(\@spec);
      $opt->merge_defaults( read_config() ); # provides 'user' & 'password'
      $opt->validate({requires => ['action']});
-  
+
   =head2 Parsing the Command Line
-  
+
   Technically, Getopt::Lucid scans an array for command line options, not a
   command-line string.  By default, this array is C<<< @ARGV >>> (though other arrays
   can be used -- see C<<< new() >>>), which is typically provided by the operating
   system according to system-specific rules.
-  
+
   When Getopt::Lucid processes the array, it scans the array in order, removing
   any specified command line options and any associated arguments, and leaving
   behind any unrecognized elements in the array.  If an element consisting solely
   of two-dashes ("--") is found, array scanning is terminated at that point.
   Any options found during scanning are applied in order.  E.g.:
-  
+
      @ARGV = qw( --lib /tmp --lib /var );
      my $opt = Getopt::Lucid->getopt( [ List("lib") ] );
      print join ", " $opt->lib;
      # prints "/tmp, /var"
-  
+
   If an element encountered in processing begins with a dash, but is not
   recognized as a short-form or long-form option name or alias, an exception
   will be thrown.
-  
+
   =head2 Negation
-  
+
   Getopt::Lucid also supports negating options.  Options are negated if the
   option is specified with "no-" or "--no-" prefixed to a name or alias.  By
   default, negation clears the option:  Switch and Counter options are set to
@@ -3550,171 +3550,171 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   list and empty hash, respectively. For List and Keypair options, it is also
   possible to negate a specific list element or hash key by placing an equals
   sign and the list element or key immediately after the option name:
-  
+
      --no-lib=/tmp --no-define=arch
      # removes "/tmp" from lib and the "arch" key from define
-  
+
   As with all options, negation is processed in order, allowing a "reset" in
   the middle of command line processing.  This may be useful for those using
   command aliases who wish to "switch off" options in the alias.  E.g, in Unix:
-  
+
      $ alias wibble = wibble.pl --verbose
      $ wibble --no-verbose
-   
+
      # @ARGV would contain ( "--verbose", "--no-verbose" )
-  
+
   This also may have applications in post-processing configuration files (see
   L</Managing Defaults and Config Files>).
-  
+
   =head2 Accessors and Mutators
-  
+
   After processing the command-line array, the values of the options may be read
   or modified using accessorsE<sol>mutators of the form "get_NAME" and "set_NAME",
   where NAME represents the option name in the specification without any
   leading dashes. E.g.
-  
+
      @spec = (
        Switch("--test|-t"),
        List("--lib|-L"),
        Keypair("--define|-D"),
      );
-   
+
      $opt = Getopt::Lucid->getopt( \@spec );
      print $opt->get_test ? "True" : "False";
      $opt->set_test(1);
-  
+
   For option names with dashes, underscores should be substituted in the accessor
   calls.  E.g.
-  
+
      @spec = (
        Param("--input-file|-i")
      );
-   
+
      $opt = Getopt::Lucid->getopt( \@spec );
      print $opt->get_input_file;
-  
+
   This can create an ambiguous case if a similar option exists with underscores
   in place of dashes.  (E.g. "input_file" and "input-file".)  Users can safely
   avoid these problems by choosing to use either dashes or underscores
   exclusively and not mixing the two styles.
-  
+
   List and Keypair options are returned as flattened lists:
-  
+
      my @lib = $opt->get_lib;
      my %define = $opt->get_define;
-  
+
   Using the "set_NAME" mutator is not recommended and should be used with
   caution.  No validation is performed and changes will be lost if the results of
   processing the command line array are recomputed (e.g, such as occurs if new
   defaults are applied).  List and Keypair options mutators take a list, not
   references.
-  
+
   =head2 Managing Defaults and Config Files
-  
+
   A typical problem for command-line option processing is the precedence
   relationship between default option values specified within the program,
   default option values stored in a configuration file or in environment
   variables, and option values specified on the command-line, particularly
   when the command-line specifies an alternate configuration file.
-  
+
   Getopt::Lucid takes the following approach to this problem:
-  
+
   =over
-  
+
   =item *
-  
+
   Initial default values may be specified as part of the option
   specification (using the C<<< default() >>> modifier)
-  
+
   =item *
-  
+
   Default values from the option specification may be modified or replaced
   entirely with default values provided in an external hash
   (such as from a standard config file or environment variables)
-  
+
   =item *
-  
+
   When the command-line array is processed, options and their arguments
   are stored in the order they appeared in the command-line array
-  
+
   =item *
-  
+
   The stored options are applied in-order to modify or replace the set of
   "current" default option values
-  
+
   =item *
-  
+
   If default values are subsequently changed (such as from an alternative
   configuration file), the stored options are re-applied in-order to the
   new set of default option values
-  
+
   =back
-  
+
   With this approach, the resulting option set is always the result of applying
   options (or negations) from the command-line array to a set of default-values.  Users have
   complete freedom to apply whatever precedence rules they wish to the default
   values and may even change default values after the command-line array is
   processed without losing the options given on the command line.
-  
+
   Getopt::Lucid provides several functions to assist in manipulating default
   values:
-  
+
   =over
-  
+
   =item *
-  
+
   C<<< merge_defaults() >>> -- new defaults overwrite any matching, existing defaults.
   KeyPairs hashes and List arrays are replaced entirely with new defaults
-  
+
   =item *
-  
+
   C<<< append_defaults() >>> -- new defaults overwrite any matching, existing defaults,
   except for Counter and List options, which have the new defaults added and
   appended, respectively, and KeyPair options, which are flattened into any
   existing default hash
-  
+
   =item *
-  
+
   C<<< replace_defaults() >>> -- new defaults replace existing defaults; any options
   not provided in the new defaults are reset to zeroE<sol>empty, ignoring any
   default given in the option specification
-  
+
   =item *
-  
+
   C<<< reset_defaults() >>> -- returns defaults to values given in the options
   specification
-  
+
   =back
-  
+
   =head2 Exceptions and Error Handling
-  
+
   Getopt::Lucid uses L<Exception::Class> for exceptions.  When a major error
   occurs, Getopt::Lucid will die and throw one of three Exception::Class
   subclasses:
-  
+
   =over
-  
+
   =item *
-  
+
   C<<< Getopt::Lucid::Exception::Usage >>> -- thrown when Getopt::Lucid methods are
   called incorrectly
-  
+
   =item *
-  
+
   C<<< Getopt::Lucid::Exception::Spec >>> -- thrown when the specification array
   contains incorrect or invalid data
-  
+
   =item *
-  
+
   C<<< Getopt::Lucid::Exception::ARGV >>> -- thrown when the command-line is
   processed and fails to pass specified validation, requirements, or is
   otherwise determined to be invalid
-  
+
   =back
-  
+
   These exception may be caught using an C<<< eval >>> block and allow the calling
   program to respond differently to each class of exception.
-  
+
      my $opt;
      eval { $opt = Getopt::Lucid->getopt( \@spec ) };
      if ($@) {
@@ -3722,16 +3722,16 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
          if ref $@ eq 'Getopt::Lucid::Exception::ARGV';
        ref $@ ? $@->rethrow : die $@;
      }
-  
+
   =head2 Ambiguous Cases and Gotchas
-  
+
   =head3 One-character aliases and C<<< anycase >>>
-  
+
      @spec = (
        Counter("verbose|v")->anycase,
        Switch("version|V")->anycase,
      );
-  
+
   Consider the spec above.  By specifying C<<< anycase >>> on these, "verbose",
   "Verbose", "VERBOSE" are all acceptable, as are "version", "Version" and so on.
   (Including long-form versions of these, too, if "magic" mode is used.)
@@ -3739,72 +3739,72 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   rule is that exact case matches are used before case-insensitive matches are
   searched.  Thus, "-v" can only match "verbose", despite the C<<< anycase >>>
   modification, and likewise "-V" can only match "version".
-  
+
   =head3 Identical names except for dashes and underscores
-  
+
      @spec = (
        Param("input-file"),
        Switch("input_file"),
      );
-  
+
   Consider the spec above.  These are two, separate, valid options, but a call to
   the accessor C<<< get_input_file >>> is ambiguous and may return either option,
   depending on which first satisfies a "fuzzy-matching" algorithm inside the
   accessor code.  Avoid identical names with mixed dash and underscore styles.
-  
+
   =head1 METHODS
-  
+
   =head2 new()
-  
+
     $opt = Getopt::Lucid->new( \@option_spec );
     $opt = Getopt::Lucid->new( \@option_spec, \%parameters );
     $opt = Getopt::Lucid->new( \@option_spec, \@option_array );
     $opt = Getopt::Lucid->new( \@option_spec, \@option_array, \%parameters );
-  
+
   Creates a new Getopt::Lucid object.  An array reference to an option spec is
   required as an argument.  (See L</USAGE> for a description of the object spec).
   By default, objects will be set to read @ARGV for command line options. An
   optional second argument with a reference to an array will use that array for
   option processing instead.  The final argument may be a hashref of parameters.
   The only valid parameter currently is:
-  
+
   =over
-  
+
   =item *
-  
+
   strict -- enables strict mode when true
-  
+
   =back
-  
+
   For typical cases, users will likely prefer to call C<<< getopt >>> instead, which
   creates a new object and parses the command line with a single function call.
-  
+
   =head2 validate()
-  
+
      $opt->validate();
      $opt->validate( \%arguments );
-  
+
   Takes an optional argument hashref, validates that all requirements and
   prerequisites are met or throws an error.  Valid argument keys are:
-  
+
   =over
-  
+
   =item *
-  
+
   C<<< requires >>> -- an arrayref of options that must exist in the options
   object.
-  
+
   =back
-  
+
   This method returns the object for convenient chaining:
-  
+
      $opt = Getopt::Lucid->getopt(\@spec)->validate;
-  
+
   =head2 append_defaults()
-  
+
     %options = append_defaults( %config_hash );
     %options = append_defaults( \%config_hash );
-  
+
   Takes a hash or hash reference of new default values, modifies the stored
   defaults, recalculates the result of processing the command line with the
   revised defaults, and returns a hash with the resulting options.  Each
@@ -3816,183 +3816,183 @@ $fatpacked{"Getopt/Lucid.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'GE
   For Keypair options, the keyE<sol>value pairs will be added to the existing hash,
   overwriting existing keyE<sol>value pairs (just like merging two hashes).  Keys
   which are not valid names from the options specification will be ignored.
-  
+
   =head2 defaults()
-  
+
     %defaults = $opt->defaults();
-  
+
   Returns a hash containing current default values.  Keys are names from the
   option specification (without any leading dashes).  These defaults represent
   the baseline values that are modified by the parsed command line options.
-  
+
   =head2 getopt()
-  
+
     $opt = Getopt::Lucid->getopt( \@option_spec );
     $opt = Getopt::Lucid->getopt( \@option_spec, \@option_array );
     $opt->getopt();
-  
+
   Parses the command line array (@ARGV by default).  When called as a class
   function, C<<< getopt >>> takes the same arguments as C<<< new >>>, calls C<<< new >>> to create
   an object before parsing the command line, and returns the new object.  When
   called as an object method, it takes no arguments and returns itself.
-  
+
   For convenience, CE<lt>getopts()E<gt> is a alias for CE<lt>getopt()E<gt>.
-  
+
   =head2 merge_defaults()
-  
+
     %options = merge_defaults( %config_hash );
     %options = merge_defaults( \%config_hash );
-  
+
   Takes a hash or hash reference of new default values, modifies the stored
   defaults, recalculates the result of processing the command line with the
   revised defaults, and returns a hash with the resulting options.  Each
   keyE<sol>value pair in the passed hash is added to the stored defaults, overwriting
   any preexisting value.  Keys which are not valid names from the options
   specification will be ignored.
-  
+
   =head2 names()
-  
+
     @names = $opt->names();
-  
+
   Returns the list of names in the options specification.  Each name represents a
   key in the hash of options provided by C<<< options >>>.
-  
+
   =head2 options()
-  
+
     %options = $opt->options();
-  
+
   Returns a deep copy of the options hash.  Before C<<< getopt >>> is called, its
   behavior is undefined.  After C<<< getopt >>> is called, this will return the
   result of modifying the defaults with the results of command line processing.
-  
+
   =head2 replace_defaults()
-  
+
     %options = replace_defaults( %config_hash );
     %options = replace_defaults( \%config_hash );
-  
+
   Takes a hash or hash reference of new default values, replaces the stored
   defaults, recalculates the result of processing the command line with the
   revised defaults, and returns a hash with the resulting options.  Each
   keyE<sol>value pair in the passed hash replaces existing defaults, including those
   given in the option specifications.  Keys which are not valid names from the
   option specification will be ignored.
-  
+
   =head2 reset_defaults()
-  
+
     %options = reset_defaults();
-  
+
   Resets the stored defaults to the original values from the options
   specification, recalculates the result of processing the command line with the
   restored defaults, and returns a hash with the resulting options.  This
   undoes the effect of a C<<< merge_defaults >>> or C<<< add_defaults >>> call.
-  
+
   =head1 API CHANGES
-  
+
   In 1.00, the following API changes have been made:
-  
+
   =over
-  
+
   =item *
-  
+
   C<<< new() >>> now takes an optional hashref of parameters as the last
   argument
-  
+
   =item *
-  
+
   The global C<<< $STRICT >>> variable has been replaced with a per-object
   parameter C<<< strict >>>
-  
+
   =item *
-  
+
   The C<<< required >>> modifier has been removed and a new C<<< validate >>> method
   has been added to facilitate lateE<sol>custom checks of required options
-  
+
   =back
-  
+
   =head1 SEE ALSO
-  
+
   =over
-  
+
   =item *
-  
+
   L<Config::Tiny>
-  
+
   =item *
-  
+
   L<Config::Simple>
-  
+
   =item *
-  
+
   L<Config::Std>
-  
+
   =item *
-  
+
   L<Getopt::Long>
-  
+
   =item *
-  
+
   L<Regexp::Common>
-  
+
   =back
-  
+
   =head1 BUGS
-  
+
   Please report any bugs or feature using the CPAN Request Tracker.
   Bugs can be submitted through the web interface at
   L<http://rt.cpan.org/Dist/Display.html?Queue=Getopt-Lucid>
-  
+
   When submitting a bug or request, please include a test-file or a patch to an
   existing test-file that illustrates the bug or desired feature.
-  
+
   =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
-  
+
   =head1 SUPPORT
-  
+
   =head2 Bugs / Feature Requests
-  
+
   Please report any bugs or feature requests through the issue tracker
   at L<https://rt.cpan.org/Public/Dist/Display.html?Name=Getopt-Lucid>.
   You will be notified automatically of any progress on your issue.
-  
+
   =head2 Source Code
-  
+
   This is open source software.  The code repository is available for
   public review and contribution under the terms of the license.
-  
+
   L<https://github.com/dagolden/getopt-lucid>
-  
+
     git clone git://github.com/dagolden/getopt-lucid.git
-  
+
   =head1 AUTHOR
-  
+
   David Golden <dagolden@cpan.org>
-  
+
   =head1 CONTRIBUTORS
-  
+
   =over 4
-  
+
   =item *
-  
+
   Kevin McGrath <kmcgrath@cpan.org>
-  
+
   =item *
-  
+
   Nick Patch <patch@cpan.org>
-  
+
   =item *
-  
+
   Robert Bohne <rbo@cpan.org>
-  
+
   =back
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is Copyright (c) 2013 by David Golden.
-  
+
   This is free software, licensed under:
-  
+
     The Apache License, Version 2.0, January 2004
-  
+
   =cut
 GETOPT_LUCID
 
@@ -4003,92 +4003,92 @@ $fatpacked{"Getopt/Lucid/Exception.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   package Getopt::Lucid::Exception;
   # ABSTRACT: Exception classes for Getopt::Lucid
   our $VERSION = '1.05'; # VERSION
-  
+
   use Exporter;
   our @ISA = qw/Exporter Exception::Class::Base/;
   our @EXPORT = qw( throw_spec throw_argv throw_usage);
-  
+
   use Exception::Class 1.23 (
       "Getopt::Lucid::Exception" => {
           description => "Unidentified exception",
       },
-  
+
       "Getopt::Lucid::Exception::Spec" => {
           description => "Invalid specification",
       },
-  
+
       "Getopt::Lucid::Exception::ARGV" => {
           description => "Invalid argument on command line",
       },
-  
+
       "Getopt::Lucid::Exception::Usage" => {
           description => "Invalid usage",
       },
-  
+
   );
-  
+
   my %throwers = (
       throw_spec => "Getopt::Lucid::Exception::Spec",
       throw_argv => "Getopt::Lucid::Exception::ARGV",
       throw_usage => "Getopt::Lucid::Exception::Usage",
   );
-  
+
   for my $t ( keys %throwers ) {
       no strict 'refs';
       *{$t} = sub { $throwers{$t}->throw("$_[0]\n") };
   }
-  
+
   1;
-  
+
   __END__
-  
+
   =pod
-  
+
   =encoding utf-8
-  
+
   =head1 NAME
-  
+
   Getopt::Lucid::Exception - Exception classes for Getopt::Lucid
-  
+
   =head1 VERSION
-  
+
   version 1.05
-  
+
   =for Pod::Coverage description
   throw_argv
   throw_spec
   throw_usage
-  
+
   =head1 AUTHOR
-  
+
   David Golden <dagolden@cpan.org>
-  
+
   =head1 CONTRIBUTORS
-  
+
   =over 4
-  
+
   =item *
-  
+
   Kevin McGrath <kmcgrath@cpan.org>
-  
+
   =item *
-  
+
   Nick Patch <patch@cpan.org>
-  
+
   =item *
-  
+
   Robert Bohne <rbo@cpan.org>
-  
+
   =back
-  
+
   =head1 COPYRIGHT AND LICENSE
-  
+
   This software is Copyright (c) 2013 by David Golden.
-  
+
   This is free software, licensed under:
-  
+
     The Apache License, Version 2.0, January 2004
-  
+
   =cut
 GETOPT_LUCID_EXCEPTION
 
@@ -4100,11 +4100,11 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   #  You may redistribute only under the same terms as Perl 5, as specified
   #  in the README file that comes with the distribution.
   #
-  
+
   require XSLoader;
   require Exporter;
   package Storable; @ISA = qw(Exporter);
-  
+
   @EXPORT = qw(store retrieve);
   @EXPORT_OK = qw(
   	nstore store_fd nstore_fd fd_retrieve
@@ -4114,11 +4114,11 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	lock_store lock_nstore lock_retrieve
           file_magic read_magic
   );
-  
+
   use vars qw($canonical $forgive_me $VERSION);
-  
+
   $VERSION = '2.51';
-  
+
   BEGIN {
       if (eval { local $SIG{__DIE__}; require Log::Agent; 1 }) {
           Log::Agent->import;
@@ -4140,11 +4140,11 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
           };
       }
   }
-  
+
   #
   # They might miss :flock in Fcntl
   #
-  
+
   BEGIN {
   	if (eval { require Fcntl; 1 } && exists $Fcntl::EXPORT_TAGS{'flock'}) {
   		Fcntl->import(':flock');
@@ -4155,23 +4155,23 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   		};
   	}
   }
-  
+
   sub CLONE {
       # clone context under threads
       Storable::init_perinterp();
   }
-  
+
   # By default restricted hashes are downgraded on earlier perls.
-  
+
   $Storable::downgrade_restricted = 1;
   $Storable::accept_future_minor = 1;
-  
+
   XSLoader::load('Storable', $Storable::VERSION);
-  
+
   #
   # Determine whether locking is possible, but only when needed.
   #
-  
+
   sub CAN_FLOCK; my $CAN_FLOCK; sub CAN_FLOCK {
   	return $CAN_FLOCK if defined $CAN_FLOCK;
   	require Config; import Config;
@@ -4180,7 +4180,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   		$Config{'d_fcntl_can_lock'} ||
   		$Config{'d_lockf'};
   }
-  
+
   sub show_file_magic {
       print <<EOM;
   #
@@ -4193,7 +4193,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   >>4	byte	&01	(network-ordered)
   >>4	byte	=3	(major 1)
   >>4	byte	=2	(major 1)
-  
+
   0	string	pst0	perl Storable(v0.7) data
   >4	byte	>0
   >>4	byte	&01	(network-ordered)
@@ -4202,26 +4202,26 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   >>5	byte	>0	(minor %d)
   EOM
   }
-  
+
   sub file_magic {
       require IO::File;
-  
+
       my $file = shift;
       my $fh = IO::File->new;
       open($fh, "<". $file) || die "Can't open '$file': $!";
       binmode($fh);
       defined(sysread($fh, my $buf, 32)) || die "Can't read from '$file': $!";
       close($fh);
-  
+
       $file = "./$file" unless $file;  # ensure TRUE value
-  
+
       return read_magic($buf, $file);
   }
-  
+
   sub read_magic {
       my($buf, $file) = @_;
       my %info;
-  
+
       my $buflen = length($buf);
       my $magic;
       if ($buf =~ s/^(pst0|perl-store)//) {
@@ -4232,9 +4232,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	return undef if $file;
   	$magic = "";
       }
-  
+
       return undef unless length($buf);
-  
+
       my $net_order;
       if ($magic eq "perl-store" && ord(substr($buf, 0, 1)) > 1) {
   	$info{version} = -1;
@@ -4259,7 +4259,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
       }
       $info{version_nv} ||= $info{version};
       $info{netorder} = $net_order;
-  
+
       unless ($net_order) {
   	return undef unless $buf =~ s/(.)//s;
   	my $len = ord $1;
@@ -4274,18 +4274,18 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	}
       }
       $info{hdrsize} = $buflen - length($buf);
-  
+
       return \%info;
   }
-  
+
   sub BIN_VERSION_NV {
       sprintf "%d.%03d", BIN_MAJOR(), BIN_MINOR();
   }
-  
+
   sub BIN_WRITE_VERSION_NV {
       sprintf "%d.%03d", BIN_MAJOR(), BIN_WRITE_MINOR();
   }
-  
+
   #
   # store
   #
@@ -4297,7 +4297,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub store {
   	return _store(\&pstore, @_, 0);
   }
-  
+
   #
   # nstore
   #
@@ -4306,7 +4306,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub nstore {
   	return _store(\&net_pstore, @_, 0);
   }
-  
+
   #
   # lock_store
   #
@@ -4315,7 +4315,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub lock_store {
   	return _store(\&pstore, @_, 1);
   }
-  
+
   #
   # lock_nstore
   #
@@ -4324,7 +4324,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub lock_nstore {
   	return _store(\&net_pstore, @_, 1);
   }
-  
+
   # Internal store to file routine
   sub _store {
   	my $xsptr = shift;
@@ -4365,7 +4365,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $ret;
   }
-  
+
   #
   # store_fd
   #
@@ -4375,7 +4375,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub store_fd {
   	return _store_fd(\&pstore, @_);
   }
-  
+
   #
   # nstore_fd
   #
@@ -4385,7 +4385,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	my ($self, $file) = @_;
   	return _store_fd(\&net_pstore, @_);
   }
-  
+
   # Internal store routine on opened file descriptor
   sub _store_fd {
   	my $xsptr = shift;
@@ -4404,7 +4404,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $ret;
   }
-  
+
   #
   # freeze
   #
@@ -4414,7 +4414,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub freeze {
   	_freeze(\&mstore, @_);
   }
-  
+
   #
   # nfreeze
   #
@@ -4423,7 +4423,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub nfreeze {
   	_freeze(\&net_mstore, @_);
   }
-  
+
   # Internal freeze routine
   sub _freeze {
   	my $xsptr = shift;
@@ -4438,7 +4438,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $ret ? $ret : undef;
   }
-  
+
   #
   # retrieve
   #
@@ -4448,7 +4448,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub retrieve {
   	_retrieve($_[0], 0);
   }
-  
+
   #
   # lock_retrieve
   #
@@ -4457,7 +4457,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   sub lock_retrieve {
   	_retrieve($_[0], 1);
   }
-  
+
   # Internal retrieve routine
   sub _retrieve {
   	my ($file, $use_locking) = @_;
@@ -4481,7 +4481,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $self;
   }
-  
+
   #
   # fd_retrieve
   #
@@ -4498,9 +4498,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $self;
   }
-  
+
   sub retrieve_fd { &fd_retrieve }		# Backward compatibility
-  
+
   #
   # thaw
   #
@@ -4517,79 +4517,79 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	$@ = $da;
   	return $self;
   }
-  
+
   1;
   __END__
-  
+
   =head1 NAME
-  
+
   Storable - persistence for Perl data structures
-  
+
   =head1 SYNOPSIS
-  
+
    use Storable;
    store \%table, 'file';
    $hashref = retrieve('file');
-  
+
    use Storable qw(nstore store_fd nstore_fd freeze thaw dclone);
-  
+
    # Network order
    nstore \%table, 'file';
    $hashref = retrieve('file');	# There is NO nretrieve()
-  
+
    # Storing to and retrieving from an already opened file
    store_fd \@array, \*STDOUT;
    nstore_fd \%table, \*STDOUT;
    $aryref = fd_retrieve(\*SOCKET);
    $hashref = fd_retrieve(\*SOCKET);
-  
+
    # Serializing to memory
    $serialized = freeze \%table;
    %table_clone = %{ thaw($serialized) };
-  
+
    # Deep (recursive) cloning
    $cloneref = dclone($ref);
-  
+
    # Advisory locking
    use Storable qw(lock_store lock_nstore lock_retrieve)
    lock_store \%table, 'file';
    lock_nstore \%table, 'file';
    $hashref = lock_retrieve('file');
-  
+
   =head1 DESCRIPTION
-  
+
   The Storable package brings persistence to your Perl data structures
   containing SCALAR, ARRAY, HASH or REF objects, i.e. anything that can be
   conveniently stored to disk and retrieved at a later time.
-  
+
   It can be used in the regular procedural way by calling C<store> with
   a reference to the object to be stored, along with the file name where
   the image should be written.
-  
+
   The routine returns C<undef> for I/O problems or other internal error,
   a true value otherwise. Serious errors are propagated as a C<die> exception.
-  
+
   To retrieve data stored to disk, use C<retrieve> with a file name.
   The objects stored into that file are recreated into memory for you,
   and a I<reference> to the root object is returned. In case an I/O error
   occurs while reading, C<undef> is returned instead. Other serious
   errors are propagated via C<die>.
-  
+
   Since storage is performed recursively, you might want to stuff references
   to objects that share a lot of common data into a single array or hash
   table, and then store that object. That way, when you retrieve back the
   whole thing, the objects will continue to share what they originally shared.
-  
+
   At the cost of a slight header overhead, you may store to an already
   opened file descriptor using the C<store_fd> routine, and retrieve
   from a file via C<fd_retrieve>. Those names aren't imported by default,
   so you will have to do that explicitly if you need those routines.
   The file descriptor you supply must be already opened, for read
   if you're going to retrieve and for write if you wish to store.
-  
+
   	store_fd(\%table, *STDOUT) || die "can't store to stdout\n";
   	$hashref = fd_retrieve(*STDIN);
-  
+
   You can also store data in network order to allow easy sharing across
   multiple platforms, or when storing on a socket known to be remotely
   connected. The routines to call have an initial C<n> prefix for I<network>,
@@ -4598,10 +4598,10 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   from native or network ordered data.  Double values are stored stringified
   to ensure portability as well, at the slight risk of loosing some precision
   in the last decimals.
-  
+
   When using C<fd_retrieve>, objects are retrieved in sequence, one
   object (i.e. one recursive tree) per associated C<store_fd>.
-  
+
   If you're more from the object-oriented camp, you can inherit from
   Storable and directly store your objects by invoking C<store> as
   a method. The fact that the root of the to-be-stored tree is a
@@ -4609,55 +4609,55 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   retrieve does not provide a reference to that object but rather the
   blessed object reference itself. (Otherwise, you'd get a reference
   to that blessed object).
-  
+
   =head1 MEMORY STORE
-  
+
   The Storable engine can also store data into a Perl scalar instead, to
   later retrieve them. This is mainly used to freeze a complex structure in
   some safe compact memory place (where it can possibly be sent to another
   process via some IPC, since freezing the structure also serializes it in
   effect). Later on, and maybe somewhere else, you can thaw the Perl scalar
   out and recreate the original complex structure in memory.
-  
+
   Surprisingly, the routines to be called are named C<freeze> and C<thaw>.
   If you wish to send out the frozen scalar to another machine, use
   C<nfreeze> instead to get a portable image.
-  
+
   Note that freezing an object structure and immediately thawing it
   actually achieves a deep cloning of that structure:
-  
+
       dclone(.) = thaw(freeze(.))
-  
+
   Storable provides you with a C<dclone> interface which does not create
   that intermediary scalar but instead freezes the structure in some
   internal memory space and then immediately thaws it out.
-  
+
   =head1 ADVISORY LOCKING
-  
+
   The C<lock_store> and C<lock_nstore> routine are equivalent to
   C<store> and C<nstore>, except that they get an exclusive lock on
   the file before writing.  Likewise, C<lock_retrieve> does the same
   as C<retrieve>, but also gets a shared lock on the file before reading.
-  
+
   As with any advisory locking scheme, the protection only works if you
   systematically use C<lock_store> and C<lock_retrieve>.  If one side of
   your application uses C<store> whilst the other uses C<lock_retrieve>,
   you will get no protection at all.
-  
+
   The internal advisory locking is implemented using Perl's flock()
   routine.  If your system does not support any form of flock(), or if
   you share your files across NFS, you might wish to use other forms
   of locking by using modules such as LockFile::Simple which lock a
   file using a filesystem entry, instead of locking the file descriptor.
-  
+
   =head1 SPEED
-  
+
   The heart of Storable is written in C for decent speed. Extra low-level
   optimizations have been made when manipulating perl internals, to
   sacrifice encapsulation for the benefit of greater speed.
-  
+
   =head1 CANONICAL REPRESENTATION
-  
+
   Normally, Storable stores elements of hashes in the order they are
   stored internally by Perl, i.e. pseudo-randomly.  If you set
   C<$Storable::canonical> to some C<TRUE> value, Storable will store
@@ -4665,12 +4665,12 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   compare data structures by comparing their frozen representations (or
   even the compressed frozen representations), which can be useful for
   creating lookup tables for complicated queries.
-  
+
   Canonical order does not imply network order; those are two orthogonal
   settings.
-  
+
   =head1 CODE REFERENCES
-  
+
   Since Storable version 2.05, CODE references may be serialized with
   the help of L<B::Deparse>. To enable this feature, set
   C<$Storable::Deparse> to a true value. To enable deserialization,
@@ -4680,23 +4680,23 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   to a subroutine reference which would be used instead of C<eval>. See
   below for an example using a L<Safe> compartment for deserialization
   of CODE references.
-  
+
   If C<$Storable::Deparse> and/or C<$Storable::Eval> are set to false
   values, then the value of C<$Storable::forgive_me> (see below) is
   respected while serializing and deserializing.
-  
+
   =head1 FORWARD COMPATIBILITY
-  
+
   This release of Storable can be used on a newer version of Perl to
   serialize data which is not supported by earlier Perls.  By default,
   Storable will attempt to do the right thing, by C<croak()>ing if it
   encounters data that it cannot deserialize.  However, the defaults
   can be changed as follows:
-  
+
   =over 4
-  
+
   =item utf8 data
-  
+
   Perl 5.6 added support for Unicode characters with code points > 255,
   and Perl 5.8 has full support for Unicode characters in hash keys.
   Perl internally encodes strings with these characters using utf8, and
@@ -4708,9 +4708,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   data loss, because with C<$drop_utf8> true, it becomes impossible to tell
   whether the original data was the Unicode string, or a series of bytes
   that happen to be valid utf8.
-  
+
   =item restricted hashes
-  
+
   Perl 5.8 adds support for restricted hashes, which have keys
   restricted to a given set, and can have values locked to be read only.
   By default, when Storable encounters a restricted hash on a perl
@@ -4719,9 +4719,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   all values unlocked.  To make Storable C<croak()> instead, set
   C<$Storable::downgrade_restricted> to a C<FALSE> value.  To restore
   the default set it back to some C<TRUE> value.
-  
+
   =item files from future versions of Storable
-  
+
   Earlier versions of Storable would immediately croak if they encountered
   a file with a higher internal version number than the reading Storable
   knew about.  Internal version numbers are increased each time new data
@@ -4729,233 +4729,233 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   format.  This meant that a newer Storable module had no way of writing a
   file readable by an older Storable, even if the writer didn't store newer
   data types.
-  
+
   This version of Storable will defer croaking until it encounters a data
   type in the file that it does not recognize.  This means that it will
   continue to read files generated by newer Storable modules which are careful
   in what they write out, making it easier to upgrade Storable modules in a
   mixed environment.
-  
+
   The old behaviour of immediate croaking can be re-instated by setting
   C<$Storable::accept_future_minor> to some C<FALSE> value.
-  
+
   =back
-  
+
   All these variables have no effect on a newer Perl which supports the
   relevant feature.
-  
+
   =head1 ERROR REPORTING
-  
+
   Storable uses the "exception" paradigm, in that it does not try to workaround
   failures: if something bad happens, an exception is generated from the
   caller's perspective (see L<Carp> and C<croak()>).  Use eval {} to trap
   those exceptions.
-  
+
   When Storable croaks, it tries to report the error via the C<logcroak()>
   routine from the C<Log::Agent> package, if it is available.
-  
+
   Normal errors are reported by having store() or retrieve() return C<undef>.
   Such errors are usually I/O errors (or truncated stream errors at retrieval).
-  
+
   =head1 WIZARDS ONLY
-  
+
   =head2 Hooks
-  
+
   Any class may define hooks that will be called during the serialization
   and deserialization process on objects that are instances of that class.
   Those hooks can redefine the way serialization is performed (and therefore,
   how the symmetrical deserialization should be conducted).
-  
+
   Since we said earlier:
-  
+
       dclone(.) = thaw(freeze(.))
-  
+
   everything we say about hooks should also hold for deep cloning. However,
   hooks get to know whether the operation is a mere serialization, or a cloning.
-  
+
   Therefore, when serializing hooks are involved,
-  
+
       dclone(.) <> thaw(freeze(.))
-  
+
   Well, you could keep them in sync, but there's no guarantee it will always
   hold on classes somebody else wrote.  Besides, there is little to gain in
   doing so: a serializing hook could keep only one attribute of an object,
   which is probably not what should happen during a deep cloning of that
   same object.
-  
+
   Here is the hooking interface:
-  
+
   =over 4
-  
+
   =item C<STORABLE_freeze> I<obj>, I<cloning>
-  
+
   The serializing hook, called on the object during serialization.  It can be
   inherited, or defined in the class itself, like any other method.
-  
+
   Arguments: I<obj> is the object to serialize, I<cloning> is a flag indicating
   whether we're in a dclone() or a regular serialization via store() or freeze().
-  
+
   Returned value: A LIST C<($serialized, $ref1, $ref2, ...)> where $serialized
   is the serialized form to be used, and the optional $ref1, $ref2, etc... are
   extra references that you wish to let the Storable engine serialize.
-  
+
   At deserialization time, you will be given back the same LIST, but all the
   extra references will be pointing into the deserialized structure.
-  
+
   The B<first time> the hook is hit in a serialization flow, you may have it
   return an empty list.  That will signal the Storable engine to further
   discard that hook for this class and to therefore revert to the default
   serialization of the underlying Perl data.  The hook will again be normally
   processed in the next serialization.
-  
+
   Unless you know better, serializing hook should always say:
-  
+
       sub STORABLE_freeze {
           my ($self, $cloning) = @_;
           return if $cloning;         # Regular default serialization
           ....
       }
-  
+
   in order to keep reasonable dclone() semantics.
-  
+
   =item C<STORABLE_thaw> I<obj>, I<cloning>, I<serialized>, ...
-  
+
   The deserializing hook called on the object during deserialization.
   But wait: if we're deserializing, there's no object yet... right?
-  
+
   Wrong: the Storable engine creates an empty one for you.  If you know Eiffel,
   you can view C<STORABLE_thaw> as an alternate creation routine.
-  
+
   This means the hook can be inherited like any other method, and that
   I<obj> is your blessed reference for this particular instance.
-  
+
   The other arguments should look familiar if you know C<STORABLE_freeze>:
   I<cloning> is true when we're part of a deep clone operation, I<serialized>
   is the serialized string you returned to the engine in C<STORABLE_freeze>,
   and there may be an optional list of references, in the same order you gave
   them at serialization time, pointing to the deserialized objects (which
   have been processed courtesy of the Storable engine).
-  
+
   When the Storable engine does not find any C<STORABLE_thaw> hook routine,
   it tries to load the class by requiring the package dynamically (using
   the blessed package name), and then re-attempts the lookup.  If at that
   time the hook cannot be located, the engine croaks.  Note that this mechanism
   will fail if you define several classes in the same file, but L<perlmod>
   warned you.
-  
+
   It is up to you to use this information to populate I<obj> the way you want.
-  
+
   Returned value: none.
-  
+
   =item C<STORABLE_attach> I<class>, I<cloning>, I<serialized>
-  
+
   While C<STORABLE_freeze> and C<STORABLE_thaw> are useful for classes where
   each instance is independent, this mechanism has difficulty (or is
   incompatible) with objects that exist as common process-level or
   system-level resources, such as singleton objects, database pools, caches
   or memoized objects.
-  
+
   The alternative C<STORABLE_attach> method provides a solution for these
   shared objects. Instead of C<STORABLE_freeze> --E<gt> C<STORABLE_thaw>,
   you implement C<STORABLE_freeze> --E<gt> C<STORABLE_attach> instead.
-  
+
   Arguments: I<class> is the class we are attaching to, I<cloning> is a flag
   indicating whether we're in a dclone() or a regular de-serialization via
   thaw(), and I<serialized> is the stored string for the resource object.
-  
+
   Because these resource objects are considered to be owned by the entire
   process/system, and not the "property" of whatever is being serialized,
   no references underneath the object should be included in the serialized
   string. Thus, in any class that implements C<STORABLE_attach>, the
   C<STORABLE_freeze> method cannot return any references, and C<Storable>
   will throw an error if C<STORABLE_freeze> tries to return references.
-  
+
   All information required to "attach" back to the shared resource object
   B<must> be contained B<only> in the C<STORABLE_freeze> return string.
   Otherwise, C<STORABLE_freeze> behaves as normal for C<STORABLE_attach>
   classes.
-  
+
   Because C<STORABLE_attach> is passed the class (rather than an object),
   it also returns the object directly, rather than modifying the passed
   object.
-  
+
   Returned value: object of type C<class>
-  
+
   =back
-  
+
   =head2 Predicates
-  
+
   Predicates are not exportable.  They must be called by explicitly prefixing
   them with the Storable package name.
-  
+
   =over 4
-  
+
   =item C<Storable::last_op_in_netorder>
-  
+
   The C<Storable::last_op_in_netorder()> predicate will tell you whether
   network order was used in the last store or retrieve operation.  If you
   don't know how to use this, just forget about it.
-  
+
   =item C<Storable::is_storing>
-  
+
   Returns true if within a store operation (via STORABLE_freeze hook).
-  
+
   =item C<Storable::is_retrieving>
-  
+
   Returns true if within a retrieve operation (via STORABLE_thaw hook).
-  
+
   =back
-  
+
   =head2 Recursion
-  
+
   With hooks comes the ability to recurse back to the Storable engine.
   Indeed, hooks are regular Perl code, and Storable is convenient when
   it comes to serializing and deserializing things, so why not use it
   to handle the serialization string?
-  
+
   There are a few things you need to know, however:
-  
+
   =over 4
-  
+
   =item *
-  
+
   You can create endless loops if the things you serialize via freeze()
   (for instance) point back to the object we're trying to serialize in
   the hook.
-  
+
   =item *
-  
+
   Shared references among objects will not stay shared: if we're serializing
   the list of object [A, C] where both object A and C refer to the SAME object
   B, and if there is a serializing hook in A that says freeze(B), then when
   deserializing, we'll get [A', C'] where A' refers to B', but C' refers to D,
   a deep clone of B'.  The topology was not preserved.
-  
+
   =back
-  
+
   That's why C<STORABLE_freeze> lets you provide a list of references
   to serialize.  The engine guarantees that those will be serialized in the
   same context as the other objects, and therefore that shared objects will
   stay shared.
-  
+
   In the above [A, C] example, the C<STORABLE_freeze> hook could return:
-  
+
   	("something", $self->{B})
-  
+
   and the B part would be serialized by the engine.  In C<STORABLE_thaw>, you
   would get back the reference to the B' object, deserialized for you.
-  
+
   Therefore, recursion should normally be avoided, but is nonetheless supported.
-  
+
   =head2 Deep Cloning
-  
+
   There is a Clone module available on CPAN which implements deep cloning
   natively, i.e. without freezing to memory and thawing the result.  It is
   aimed to replace Storable's dclone() some day.  However, it does not currently
   support Storable hooks to redefine the way deep cloning is performed.
-  
+
   =head1 Storable magic
-  
+
   Yes, there's a lot of that :-) But more precisely, in UNIX systems
   there's a utility called C<file>, which recognizes data files based on
   their contents (usually their first few bytes).  For this to work,
@@ -4968,40 +4968,40 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   implementation of the C<file> utility, version 3.38 or later,
   is expected to contain support for recognising Storable files
   out-of-the-box, in addition to other kinds of Perl files.
-  
+
   You can also use the following functions to extract the file header
   information from Storable images:
-  
+
   =over
-  
+
   =item $info = Storable::file_magic( $filename )
-  
+
   If the given file is a Storable image return a hash describing it.  If
   the file is readable, but not a Storable image return C<undef>.  If
   the file does not exist or is unreadable then croak.
-  
+
   The hash returned has the following elements:
-  
+
   =over
-  
+
   =item C<version>
-  
+
   This returns the file format version.  It is a string like "2.7".
-  
+
   Note that this version number is not the same as the version number of
   the Storable module itself.  For instance Storable v0.7 create files
   in format v2.0 and Storable v2.15 create files in format v2.7.  The
   file format version number only increment when additional features
   that would confuse older versions of the module are added.
-  
+
   Files older than v2.0 will have the one of the version numbers "-1",
   "0" or "1".  No minor number was used at that time.
-  
+
   =item C<version_nv>
-  
+
   This returns the file format version as number.  It is a string like
   "2.007".  This value is suitable for numeric comparisons.
-  
+
   The constant function C<Storable::BIN_VERSION_NV> returns a comparable
   number that represents the highest file version number that this
   version of Storable fully supports (but see discussion of
@@ -5009,97 +5009,97 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   C<Storable::BIN_WRITE_VERSION_NV> function returns what file version
   is written and might be less than C<Storable::BIN_VERSION_NV> in some
   configurations.
-  
+
   =item C<major>, C<minor>
-  
+
   This also returns the file format version.  If the version is "2.7"
   then major would be 2 and minor would be 7.  The minor element is
   missing for when major is less than 2.
-  
+
   =item C<hdrsize>
-  
+
   The is the number of bytes that the Storable header occupies.
-  
+
   =item C<netorder>
-  
+
   This is TRUE if the image store data in network order.  This means
   that it was created with nstore() or similar.
-  
+
   =item C<byteorder>
-  
+
   This is only present when C<netorder> is FALSE.  It is the
   $Config{byteorder} string of the perl that created this image.  It is
   a string like "1234" (32 bit little endian) or "87654321" (64 bit big
   endian).  This must match the current perl for the image to be
   readable by Storable.
-  
+
   =item C<intsize>, C<longsize>, C<ptrsize>, C<nvsize>
-  
+
   These are only present when C<netorder> is FALSE. These are the sizes of
   various C datatypes of the perl that created this image.  These must
   match the current perl for the image to be readable by Storable.
-  
+
   The C<nvsize> element is only present for file format v2.2 and
   higher.
-  
+
   =item C<file>
-  
+
   The name of the file.
-  
+
   =back
-  
+
   =item $info = Storable::read_magic( $buffer )
-  
+
   =item $info = Storable::read_magic( $buffer, $must_be_file )
-  
+
   The $buffer should be a Storable image or the first few bytes of it.
   If $buffer starts with a Storable header, then a hash describing the
   image is returned, otherwise C<undef> is returned.
-  
+
   The hash has the same structure as the one returned by
   Storable::file_magic().  The C<file> element is true if the image is a
   file image.
-  
+
   If the $must_be_file argument is provided and is TRUE, then return
   C<undef> unless the image looks like it belongs to a file dump.
-  
+
   The maximum size of a Storable header is currently 21 bytes.  If the
   provided $buffer is only the first part of a Storable image it should
   at least be this long to ensure that read_magic() will recognize it as
   such.
-  
+
   =back
-  
+
   =head1 EXAMPLES
-  
+
   Here are some code samples showing a possible usage of Storable:
-  
+
   	use Storable qw(store retrieve freeze thaw dclone);
-  
+
   	%color = ('Blue' => 0.1, 'Red' => 0.8, 'Black' => 0, 'White' => 1);
-  
+
   	store(\%color, 'mycolors') or die "Can't store %a in mycolors!\n";
-  
+
   	$colref = retrieve('mycolors');
   	die "Unable to retrieve from mycolors!\n" unless defined $colref;
   	printf "Blue is still %lf\n", $colref->{'Blue'};
-  
+
   	$colref2 = dclone(\%color);
-  
+
   	$str = freeze(\%color);
   	printf "Serialization of %%color is %d bytes long.\n", length($str);
   	$colref3 = thaw($str);
-  
+
   which prints (on my machine):
-  
+
   	Blue is still 0.100000
   	Serialization of %color is 102 bytes long.
-  
+
   Serialization of CODE references and deserialization in a safe
   compartment:
-  
+
   =for example begin
-  
+
   	use Storable qw(freeze thaw);
   	use Safe;
   	use strict;
@@ -5111,16 +5111,16 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	my $serialized = freeze(sub { 42 });
   	my $code = thaw($serialized);
   	$code->() == 42;
-  
+
   =for example end
-  
+
   =for example_testing
           is( $code->(), 42 );
-  
+
   =head1 SECURITY WARNING
-  
+
   B<Do not accept Storable documents from untrusted sources!>
-  
+
   Some features of Storable can lead to security vulnerabilities if you
   accept Storable documents from untrusted sources. Most obviously, the
   optional (off by default) CODE reference serialization feature allows
@@ -5133,24 +5133,24 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   crafted Storable documents may put such objects in the value of
   a hash key that is overridden by another key/value pair in the
   same hash, thus causing immediate destructor execution.
-  
+
   In a future version of Storable, we intend to provide options to disable
   loading modules for classes and to disable deserializing objects
   altogether. I<Nonetheless, Storable deserializing documents from
   untrusted sources is expected to have other, yet undiscovered,
   security concerns such as allowing an attacker to cause the deserializer
   to crash hard.>
-  
+
   B<Therefore, let me repeat: Do not accept Storable documents from
   untrusted sources!>
-  
+
   If your application requires accepting data from untrusted sources, you
   are best off with a less powerful and more-likely safe serialization format
   and implementation. If your data is sufficiently simple, JSON is a good
   choice and offers maximum interoperability.
-  
+
   =head1 WARNING
-  
+
   If you're using references as keys within your hash tables, you're bound
   to be disappointed when retrieving your data. Indeed, Perl stringifies
   references used as hash table keys. If you later wish to access the
@@ -5158,46 +5158,46 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   reference that was used for the key originally to record the value into
   the hash table), it will work because both references stringify to the
   same string.
-  
+
   It won't work across a sequence of C<store> and C<retrieve> operations,
   however, because the addresses in the retrieved objects, which are
   part of the stringified references, will probably differ from the
   original addresses. The topology of your structure is preserved,
   but not hidden semantics like those.
-  
+
   On platforms where it matters, be sure to call C<binmode()> on the
   descriptors that you pass to Storable functions.
-  
+
   Storing data canonically that contains large hashes can be
   significantly slower than storing the same data normally, as
   temporary arrays to hold the keys for each hash have to be allocated,
   populated, sorted and freed.  Some tests have shown a halving of the
   speed of storing -- the exact penalty will depend on the complexity of
   your data.  There is no slowdown on retrieval.
-  
+
   =head1 BUGS
-  
+
   You can't store GLOB, FORMLINE, REGEXP, etc.... If you can define semantics
   for those operations, feel free to enhance Storable so that it can
   deal with them.
-  
+
   The store functions will C<croak> if they run into such references
   unless you set C<$Storable::forgive_me> to some C<TRUE> value. In that
   case, the fatal message is turned in a warning and some
   meaningless string is stored instead.
-  
+
   Setting C<$Storable::canonical> may not yield frozen strings that
   compare equal due to possible stringification of numbers. When the
   string version of a scalar exists, it is the form stored; therefore,
   if you happen to use your numbers as strings between two freezing
   operations on the same data structures, you will get different
   results.
-  
+
   When storing doubles in network order, their value is stored as text.
   However, you should also not expect non-numeric floating-point values
   such as infinity and "not a number" to pass successfully through a
   nstore()/retrieve() pair.
-  
+
   As Storable neither knows nor cares about character sets (although it
   does know that characters may be more than eight bits wide), any difference
   in the interpretation of character codes between a host and a target
@@ -5205,11 +5205,11 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   code points to represent the characters used in the text representation
   of floating-point numbers, you will not be able be able to exchange
   floating-point data, even with nstore().
-  
+
   C<Storable::drop_utf8> is a blunt tool.  There is no facility either to
   return B<all> strings as utf8 sequences, or to attempt to convert utf8
   data back to 8 bit and C<croak()> if the conversion fails.
-  
+
   Prior to Storable 2.01, no distinction was made between signed and
   unsigned integers on storing.  By default Storable prefers to store a
   scalars string representation (if it has one) so this would only cause
@@ -5217,9 +5217,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   to string or floating point.  In other words values that had been generated
   by integer operations such as logic ops and then not used in any string or
   arithmetic context before storing.
-  
+
   =head2 64 bit data in perl 5.6.0 and 5.6.1
-  
+
   This section only applies to you if you have existing data written out
   by Storable 2.02 or earlier on perl 5.6.0 or 5.6.1 on Unix or Linux which
   has been configured with 64 bit integer support (not the default)
@@ -5227,7 +5227,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   your own perl from source, then it almost certainly does not affect you,
   and you can stop reading now (unless you're curious). If you're using perl
   on Windows it does not affect you.
-  
+
   Storable writes a file header which contains the sizes of various C
   language types for the C compiler that built Storable (when not writing in
   network order), and will refuse to load files written by a Storable not
@@ -5237,7 +5237,7 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   different architectures are incompatible.  This is done for increased speed.
   (When writing in network order, all fields are written out as standard
   lengths, which allows full interworking, but takes longer to read and write)
-  
+
   Perl 5.6.x introduced the ability to optional configure the perl interpreter
   to use C's C<long long> type to allow scalars to store 64 bit integers on 32
   bit systems.  However, due to the way the Perl configuration system
@@ -5249,14 +5249,14 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   written by a 32 bit perl, not realise that the data is actually in a subtly
   incompatible format, and then go horribly wrong (possibly crashing) if it
   encountered a stored integer.  This is a design failure.
-  
+
   Storable has now been changed to write out and read in a file header with
   information about the size of integers.  It's impossible to detect whether
   an old file being read in was written with 32 or 64 bit integers (they have
   the same header) so it's impossible to automatically switch to a correct
   backwards compatibility mode.  Hence this Storable defaults to the new,
   correct behaviour.
-  
+
   What this means is that if you have data written by Storable 1.x running
   on perl 5.6.0 or 5.6.1 configured with 64 bit integers on Unix or Linux
   then by default this Storable will refuse to read it, giving the error
@@ -5265,18 +5265,18 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   Storable read and write files with the old header.  You should also
   migrate your data, or any older perl you are communicating with, to this
   current version of Storable.
-  
+
   If you don't have data written with specific configuration of perl described
   above, then you do not and should not do anything.  Don't set the flag -
   not only will Storable on an identically configured perl refuse to load them,
   but Storable a differently configured perl will load them believing them
   to be correct for it, and then may well fail or crash part way through
   reading them.
-  
+
   =head1 CREDITS
-  
+
   Thank you to (in chronological order):
-  
+
   	Jarkko Hietaniemi <jhi@iki.fi>
   	Ulrich Pfeifer <pfeifer@charly.informatik.uni-dortmund.de>
   	Benjamin A. Holzman <bholzman@earthlink.net>
@@ -5292,9 +5292,9 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   	Erik Haugan <erik@solbors.no>
   	Benjamin A. Holzman <ben.holzman@grantstreet.com>
   	Reini Urban <rurban@cpanel.net>
-  
+
   for their bug reports, suggestions and contributions.
-  
+
   Benjamin Holzman contributed the tied variable support, Andrew Ford
   contributed the canonical order for hashes, and Gisle Aas fixed
   a few misunderstandings of mine regarding the perl internals,
@@ -5306,23 +5306,23 @@ $fatpacked{"darwin-2level/Storable.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\
   and references to tied items support.  Benjamin Holzman added a performance
   improvement for overloaded classes; thanks to Grant Street Group for footing
   the bill.
-  
+
   =head1 AUTHOR
-  
+
   Storable was written by Raphael Manfredi
   F<E<lt>Raphael_Manfredi@pobox.comE<gt>>
   Maintenance is now done by the perl5-porters
   F<E<lt>perl5-porters@perl.orgE<gt>>
-  
+
   Please e-mail us with problems, bug fixes, comments and complaints,
   although if you have compliments you should send them to Raphael.
   Please don't e-mail Raphael with problems, as he no longer works on
   Storable, and your message will be delayed while he forwards it to us.
-  
+
   =head1 SEE ALSO
-  
+
   L<Clone>.
-  
+
   =cut
 DARWIN-2LEVEL_STORABLE
 
