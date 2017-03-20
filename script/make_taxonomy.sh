@@ -28,7 +28,7 @@ echo -e '0\tUnclassified\tno rank|Taxon' >> $targetdir/out/nodes/tax_nodes  #thi
 
 #--
 #Build SQL
-perl -nE 'BEGIN{say join "\t" qw/taxid name species/} s/Taxon//; s/\|//; print $_ unless $. == 1'
+#perl -nE 'BEGIN{say join "\t",qw/taxid name species/}; s/Taxon//; s/\|//; print $_ unless $. == 1'
 
 
 # EDGES ---------------------------------------------------------#
