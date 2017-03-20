@@ -108,6 +108,7 @@ foreach my $dataset (@datasets)
             croak join " ", "You do not have the necessary KEGG files, gunzip the necessary files:", qw| genes/ko/ko ligand/compound/compound ligand/glycan/glycan xml/kgml/metabolic/ko.tar.gz module/module|;
         }
         system "bash $installdir/scripts/make_metabolism.sh";
+        print "Finished preparing files for Metabolism";
     }
     if($dataset =~ m/contig/i)
     {
