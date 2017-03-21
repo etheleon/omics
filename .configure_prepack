@@ -99,6 +99,7 @@ foreach my $dataset (@datasets)
                 `find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;`;
                 `gunzip $keggPath/module/module.gz`;
 #                `find $keggPath -name "*.gz" -execdir gunzip "{}" \\;`;
+            }
         &configureMetab($installdir, $keggPath, $cores);
         #Check if the files are ready if not ask user to download and come back again
         unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz" & -e "$keggPath/module/module")
