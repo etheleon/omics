@@ -50,6 +50,8 @@ $opt->validate({ requires => ['dataSets'] });
 my @datasets = $opt->get_dataSets;
 @datasets = map {lc $_} @datasets;
 
+my $cores = $opt->get_threads;
+print "# INFO: Using $cores cores\n";
 my $neo4j = $opt->get_neo4jimport;
 unless(defined $neo4j)
 {
@@ -100,7 +102,6 @@ foreach my $dataset (@datasets)
         }else{
             $keggPath = $opt->get_kegg;
         }
-        my $cores = $opt->get_threads;
         &configureMetab($installdir, $keggPath, $cores);
         #Check if the files are ready if not ask user to download and come back again
         unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz" & -e "$keggPath/module/module")
@@ -224,7 +225,7 @@ sub cleanContigs{
 
 name of the folder storing all projects
 
-=item --path -p -P
+=item --path -g -G
 
 root dir to place base import files (excluding the projectName). default path is set to the $home/meta4j
 
