@@ -36,6 +36,6 @@ echo -e '0\tUnclassified\tno rank|Taxon' >> $targetdir/out/nodes/tax_nodes  #thi
 #taxid:START_ID     taxid:int:END_ID    relationship
 #1       1       child.of
 ##################################################################
-perl -E 'say qq(taxid:START_ID\ttaxid:END_ID\trelationship:TYPE\tstartend)' > $targetdir/out/rels/tax2tax.rel
+perl -E 'print qq(taxid:START_ID\ttaxid:END_ID\trelationship:TYPE\tstartend); print"\n"' > $targetdir/out/rels/tax2tax.rel
 perl -aln -F"\\t\\|\\t" -e 'print qq($F[0]\t$F[1]\tchildof\t$F[0]_$F[1]) unless $F[0] == $F[1]' $taxodump/nodes.dmp >> $targetdir/out/rels/tax2tax.rel
 ##################################################################
