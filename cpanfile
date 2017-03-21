@@ -1,0 +1,12 @@
+requires 'File::Which';
+requires 'Modern::Perl';
+requires 'List::MoreUtils';
+requires 'namespace::clean';
+requires 'Set::IntervalTree';
+requires 'experimental';
+requires 'autodie';
+requires 'Getopt::Lucid';
+requires 'local::lib';
+requires 'Parallel::ForkManager';
+requires 'Array::Utils';
+requires 'Test::More';

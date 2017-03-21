@@ -17,8 +17,8 @@ FROM ubuntu
 #Basic###############################
 RUN apt-get update && \
     apt-get upgrade -y && \
-    sudo apt-get install build-essential && \
-    apt-get install libperlio-via-dynamic-perl && \
+    apt-get install -y build-essential && \
+    apt-get install -y libperlio-via-dynamic-perl && \
     apt-get install -y curl && \
     apt-get install -y make && \
     apt-get install -y git && \
@@ -34,9 +34,8 @@ RUN apt-get install -y  software-properties-common && \
     apt-get clean
 
 #OMICS
-RUN git clone https://github.com/etheleon/omics.git /tmp/omics &&
+RUN git clone --recursive https://github.com/etheleon/omics.git /tmp/omics
 WORKDIR /tmp/omics
-RUN git submodule update --init --recursive
 
 RUN curl -L https://cpanmin.us | perl - App::cpanminus && \
     cpanm --installdeps .
