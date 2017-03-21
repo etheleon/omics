@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-#core module
+#core modules
 use POSIX;
 use Pod::Usage;
 use File::Path;
@@ -37,7 +37,7 @@ my $opt = Getopt::Lucid->getopt(
     Param  ("contig|c")->needs("dataSets")->anycase(),
     List   ("memory|m")->anycase(),
     Param  ("threads|t")->default(1)->anycase(),
-    Switch ("ftp|f"),
+    Switch ("ftp|f")->needs("kegg"),
     Param  ("user|u")->needs("ftp")->anycase(),
     Param  ("password|w")->needs("ftp")->anycase(),
     Param  ("neo4jimport|j")->anycase(),
@@ -86,7 +86,7 @@ foreach my $dataset (@datasets)
 {
     if($dataset =~ m/metabolism/i)
     {
-        my $keggPath;
+        my $keggPath = $opt->get_kegg;
         if ($opt->get_ftp){
             my $username = $opt->get_user;
             my $password = $opt->get_password;
@@ -99,9 +99,6 @@ foreach my $dataset (@datasets)
                 `find $keggPath -name "*.tar.gz" -execdir tar zxf "{}" \\;`;
                 `gunzip $keggPath/module/module.gz`;
 #                `find $keggPath -name "*.gz" -execdir gunzip "{}" \\;`;
-        }else{
-            $keggPath = $opt->get_kegg;
-        }
         &configureMetab($installdir, $keggPath, $cores);
         #Check if the files are ready if not ask user to download and come back again
         unless(-e "$keggPath/genes/ko/ko" & -e "$keggPath/ligand/compound/compound" & -e "$keggPath/ligand/glycan/glycan" & -e "$keggPath/xml/kgml/metabolic/ko.tar.gz" & -e "$keggPath/module/module")
@@ -151,8 +148,8 @@ sub make
     my $nodesIMPORT = join " ", map { "--nodes $_" } <$installDIR/out/nodes/*>;
     my $edgesIMPORT = join " ", map { "--relationships $_" } <$installDIR/out/rels/*>;
 
-    my $finalCMD = "$neo4j --into $output --delimiter 'TAB' --array-delimiter '|' $nodesIMPORT $edgesIMPORT";
-    #print $finalCMD, "\n";
+    my $finalCMD = "$neo4j --into $output --delimiter 'TAB' --array-delimiter '|' $nodesIMPORT $edgesIMPORT --stacktrace true";
+    print "INFO: $finalCMD\n";
     system $finalCMD;
 }
 
