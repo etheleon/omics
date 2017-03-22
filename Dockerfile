@@ -8,6 +8,14 @@
 # Website:          https://github.com/etheleon/pAss
 # Tags:             Genomics Metagenomics
 # Base Image:       ubuntu
+# docker run etheleon/omics:0.0.1 -d=contig -c=/data/contigs --threads 10 -n=omics \
+#   -v $HOME/simulation_fr_the_beginning/reAssemble/everybodyelse/out/diamond/contigs:/data/contigs:ro \
+#   -v $HOME/testOutput:/data/output \
+#   -v $HOME/db/taxonomy_12sept2014:/data/taxonomy:ro \
+#   -v $HOME/KEGG/KEGG_test:/data/kegg \
+#   -v $HOME/local/neo4j-community-2.2.2:/data/neo4j:ro \
+#   -v $HOME:/w
+
 #################################################################
 
 # Build image with:  docker build -t etheleon/omics:0.1
@@ -34,6 +42,7 @@ RUN apt-get install -y  software-properties-common && \
     apt-get clean
 
 #OMICS
+RUN echo "boy"
 RUN git clone --recursive https://github.com/etheleon/omics.git /tmp/omics
 WORKDIR /tmp/omics
 
@@ -41,13 +50,14 @@ RUN curl -L https://cpanmin.us | perl - App::cpanminus && \
     cpanm --installdeps .
 
 RUN apt-get install -y r-base
-
 RUN R -e 'install.packages("dplyr", repos="http://cran.bic.nus.edu.sg/")'
 RUN R -e 'install.packages("igraph", repos="http://cran.bic.nus.edu.sg/")'
 RUN R -e 'install.packages("XML", repos="http://cran.bic.nus.edu.sg/")'
+
 VOLUME ["/data/contigs", "/data/output", "/data/taxonomy", "/data/kegg", "/data/neo4j", "/w"]
-ENTRYPOINT ["/tmp/omics/.configure_prepack","-d=metabolism", "-d=taxonomy","-x=/data/taxonomy","--kegg=/data/kegg", "-j=/data/neo4j/bin/neo4j-import"]
-CMD ["-d=contig", "--threads 1","-n=omics", "-c=/w/simulation_fr_the_beginning/reAssemble/everybodyelse/out/diamond/contigs"]
+
+ENTRYPOINT ["/tmp/omics/.configure_prepack","-d=metabolism", "-d=taxonomy","-x=/data/taxonomy","--kegg=/data/kegg", "-j=/data/neo4j/bin/neo4j-import","--path=/data/output"]
+CMD ["-d=contig", "-c=/data/contigs", "--threads 1","-n=omics"]
 
 #################### INSTALLATION ENDS ##############################
 MAINTAINER Wesley GOI <wesley@bic.nus.edu.sg>
