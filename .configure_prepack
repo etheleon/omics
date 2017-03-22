@@ -90,8 +90,7 @@ foreach my $dataset (@datasets)
         if ($opt->get_ftp){
             my $username = $opt->get_user;
             my $password = $opt->get_password;
-
-            $keggPath = $installdir;
+            #$keggPath = $installdir;
             foreach (qw(genes/ko.tar.gz ligand/compound.tar.gz ligand/glycan.tar.gz xml/kgml/metabolic/ko.tar.gz module/module.gz)) {
                 print "  \t## Downloading $_\n";
                 system "curl --progress-bar --create-dirs -o $keggPath/$_ ftp://$username:$password\@ftp.bioinformatics.jp/kegg/$_";
