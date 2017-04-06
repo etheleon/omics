@@ -41,21 +41,24 @@ RUN apt-get install -y  software-properties-common && \
     apt-get install -y oracle-java8-installer && \
     apt-get clean
 
+RUN apt-get install -y r-base
+RUN R -e 'install.packages("dplyr", repos="http://cran.bic.nus.edu.sg/")'
+RUN R -e 'install.packages("igraph", repos="http://cran.bic.nus.edu.sg/")'
+RUN R -e 'install.packages("XML", repos="http://cran.bic.nus.edu.sg/")'
+
 #OMICS
-RUN echo "boy"
+RUN echo "idk"
 RUN git clone --recursive https://github.com/etheleon/omics.git /tmp/omics
 WORKDIR /tmp/omics
 
 RUN curl -L https://cpanmin.us | perl - App::cpanminus && \
     cpanm --installdeps .
 
-RUN apt-get install -y r-base
-RUN R -e 'install.packages("dplyr", repos="http://cran.bic.nus.edu.sg/")'
-RUN R -e 'install.packages("igraph", repos="http://cran.bic.nus.edu.sg/")'
-RUN R -e 'install.packages("XML", repos="http://cran.bic.nus.edu.sg/")'
+WORKDIR /tmp/omics/script/kegg
+RUN git submodule update --recursive --remote
+WORKDIR /tmp/omics
 
 VOLUME ["/data/contigs", "/data/output", "/data/taxonomy", "/data/kegg", "/data/neo4j", "/w"]
-
 ENTRYPOINT ["/tmp/omics/.configure_prepack","-d=metabolism", "-d=taxonomy","-x=/data/taxonomy","--kegg=/data/kegg", "-j=/data/neo4j/bin/neo4j-import","--path=/data/output"]
 CMD ["-d=contig", "-c=/data/contigs", "--threads 1","-n=omics"]
 
