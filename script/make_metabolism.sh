@@ -50,7 +50,9 @@ echo "## Clean for neo4j"
 rm -f $targetdir/misc/newcpdnodes
 #cat $targetdir/misc/*_cpdnodes |perl -ne 'print unless /cpd\:ID/' | sort | uniq >> $targetdir/out/nodes/newcpdnodes	#removes redundancy
 cp $targetdir/misc/cpd_nodedetails $targetdir/out/nodes/newcpdnodes
+perl -pi -e 'chomp; print($_\tcpd\n)' $targetdir/out/nodes/newcpdnodes
 perl -0777 -pi -e 'print qq(cpd:ID\tname\texactMass\tmolWeight\tl:label\n)' $targetdir/out/nodes/newcpdnodes
+
 #perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g unless $. == 1' $targetdir/out/nodes/newcpdnodes
 #perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newcpdnodes
 
