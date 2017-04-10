@@ -47,7 +47,7 @@ RUN R -e 'install.packages("igraph", repos="http://cran.bic.nus.edu.sg/")'
 RUN R -e 'install.packages("XML", repos="http://cran.bic.nus.edu.sg/")'
 
 #OMICS
-RUN echo "idk4"
+RUN echo "idk5"
 RUN git clone --recursive https://github.com/etheleon/omics.git /tmp/omics
 WORKDIR /tmp/omics
 
