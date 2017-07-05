@@ -1,3 +1,6 @@
 [submodule "script/kegg"]
 	path = script/kegg
 	url = https://github.com/etheleon/keggParser.git
+[submodule "neo4jDockerfiles"]
+	path = neo4jDockerfiles
+	url = https://github.com/etheleon/docker-neo4j-publish.git
