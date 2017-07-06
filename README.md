@@ -33,9 +33,11 @@ $ neo4j start
 | ----     | ----                                                                                                 |
 | Perl     | > 5.10                                                                                               |
 | R        | > v3.1.2 is required and the following packages (dplyr igraph XML magrittr)                          |
-| neo4j    | > 2.2 (JAVA; `JAVA_HOME` has to be defined in your `$HOME/.bashrc` else `NEO4J-import` will not work |
+| neo4j    | > 2.2.3 (JAVA; `JAVA_HOME` has to be defined in your `$HOME/.bashrc` else `NEO4J-import` will not work |
 
 ## How to install NEO4J
+
+### Package manager
 
 [brew](http://brew.sh/)
 
@@ -48,6 +50,17 @@ neo4j
 
 ```
 $ brew install neo4j
+```
+
+#### Docker
+
+In the neo4jDockerfile directory, there is a directory for the installation of NEO4J v2.2.3. (omics only works with 2.2.3, 2.3.X is not supported)
+
+```
+docker run \
+    --publish=7474:7474 \
+    --volume=$HOME/neo4j/data:/data \
+    neo4j:2.2.3
 ```
 
 ## External datasets
