@@ -1,5 +1,6 @@
 [![DOI](https://zenodo.org/badge/19045/etheleon/omics.svg)](https://zenodo.org/badge/latestdoi/19045/etheleon/omics)
-
+[![](https://images.microbadger.com/badges/image/etheleon/metaomicsgraphdb.svg)](https://microbadger.com/images/etheleon/metaomicsgraphdb "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/etheleon/metaomicsgraphdb.svg)](https://microbadger.com/images/etheleon/metaomicsgraphdb "Get your own version badge on microbadger.com")
 
 ## Installation
 
