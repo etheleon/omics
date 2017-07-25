@@ -72,4 +72,7 @@ done;
 perl -0777 -pi -e 'print qq(ko:START_ID\tpathway:END_ID\trelationship:TYPE\n)' $targetdir/out/rels/ko2pathwayrels
 #perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g unless $. == 1' $targetdir/out/rels/ko2pathwayrels
 
+echo "## Full metabolism network into igraph obj"
 script/kegg/kegg.0500.igraphMetabolism.r $targetdir/misc/
+
+echo "## Done for metabolism"
