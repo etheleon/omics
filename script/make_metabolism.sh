@@ -54,6 +54,7 @@ perl -0777 -pi -e 'print qq(pathway:ID\tpathwayname\tl:label\n)' $targetdir/out/
 ##################################################
 #EDGES
 ##################################################
+echo "## Writing edges"
 
 #-- ko2cpd, cpd2ko
 echo "## ko2cpd cpd2ko"
@@ -63,12 +64,12 @@ perl -ne 'BEGIN{print qq(cpd:START_ID\tko:END_ID\trxnID\trelationship:TYPE\n)}pr
 #perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g unless $. == 1' $targetdir/out/rels/newkorels
 
 ##-- pathway2KO
+echo "##pathway2KO"
 rm -f $targetdir/out/rels/ko2pathwayrels
 for i in `perl -aln -F"\t" -e 'print $F[0] unless m/ko:ID/' $targetdir/misc/*_konodes | sort | uniq`
 do
     grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$ko = $F[0] if $.==1; push(@pathwayid, $F[4]); END{foreach $e (@pathwayid){print qq($ko\t$e\tpathwayed)}}' >> $targetdir/out/rels/ko2pathwayrels;
 done;
-
 perl -0777 -pi -e 'print qq(ko:START_ID\tpathway:END_ID\trelationship:TYPE\n)' $targetdir/out/rels/ko2pathwayrels
 #perl -pi -e 's/([\+\-\&\|\|\!\(\)\{\}\[\]\^\"\~\*\?\:\\])/\\$1/g unless $. == 1' $targetdir/out/rels/ko2pathwayrels
 
