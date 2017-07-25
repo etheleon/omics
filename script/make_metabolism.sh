@@ -26,7 +26,7 @@ cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 
 #' #KOs
 echo "## Processing Metabolic KOs"
-./script/kegg/kegg.0350.metabolic.r $targetdir
+Rscript ./script/kegg/kegg.0350.metabolic.r $targetdir
 
 echo "## Processing Non-Metabolic KOs"
 ./script/kegg/kegg.0400.non-metabolic.pl $targetdir
