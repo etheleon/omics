@@ -4,6 +4,7 @@
 use POSIX;
 use Pod::Usage;
 use File::Path;
+use File::Remove 'remove';
 use Carp;
 
 if ($#ARGV == -1){pod2usage(
@@ -116,7 +117,7 @@ foreach my $dataset (@datasets)
         my $contigPath = $opt->get_contig;
         system "cp $contigPath/nodes/* $installdir/out/nodes/";
         &cleanContigs("$installdir/out/nodes/newkonodes", "$contigPath/rels/contig2ko.rel", "$installdir/out/rels/contig2ko_cleaned.rel");
-        #system "cp $contigPath/rels/* $installdir/out/rels/";
+        system "cp $contigPath/rels/* $installdir/out/rels/";
     }
     if($dataset =~ m/taxonomy/i)
     {
@@ -196,6 +197,7 @@ sub cleanContigs{
         print $cleanedContigs $_ if exists $hash{$rows[1]};
     }
     close $rels;
+    remove $contigsrels
 }
 
 ##################################################
