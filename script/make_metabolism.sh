@@ -16,6 +16,7 @@ echo "##    Processing module nodes"
 script/kegg/kegg.0600.modules.pl $keggdump/module/module $targetdir/out/nodes/modulesNodes $targetdir/out/rels/module2ko
 
 echo "##    Importing"
+rm -f $targetdir/out/nodes/newkonodes
 script/kegg/kegg.0300.import.r $keggdump $targetdir/misc $cores
 
 cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
@@ -24,19 +25,8 @@ cat $targetdir/misc/*_konodes > $targetdir/misc/combined_redundant_konodeslist
 ##################################################
 
 #' #KOs
-#' combines redundant ko entries into one with pathways as arrays 
-rm -f $targetdir/out/nodes/newkonodes
-
 echo "## Processing Metabolic KOs"
-for i in `perl -aln -F"\t" -e 'print $F[0] unless m/ko:ID/' $targetdir/misc/*_konodes | sort | uniq`
-do
-    grep $i $targetdir/misc/combined_redundant_konodeslist | perl -aln -F"\t" -e '$earlier=join("\t",@F[0..3]) if $.==1; push(@pathwayid, $F[4]); push(@pathwayname, $F[5]); END{print qq($earlier\t), join("|", @pathwayid),qq(\t), join("|", @pathwayname)}' >> $targetdir/out/nodes/newkonodes;
-done;
-
-perl -0777 -pi -E '@header = qw/ko:ID name definition l:label pathway pathway.name/; say(join("\t", @header))' $targetdir/out/nodes/newkonodes #prints the header
-perl -pi -e 's/\"/\\"/g' $targetdir/out/nodes/newkonodes	#protects removes
-echo "## Add ko:K00000" #need to add all non-metabolic KOs
-echo -e 'ko:K00000\tUnassigned\tUnassigned\tko' >> $targetdir/out/nodes/newkonodes 
+./script/kegg/kegg.0350.metabolic.r $targetdir
 
 echo "## Processing Non-Metabolic KOs"
 ./script/kegg/kegg.0400.non-metabolic.pl $targetdir
