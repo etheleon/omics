@@ -1,4 +1,5 @@
 requires 'File::Which';
+requires 'File::Remove';
 requires 'Modern::Perl';
 requires 'List::MoreUtils';
 requires 'namespace::clean';
