@@ -180,6 +180,8 @@ sub configureMetab{
 }
 
 sub cleanContigs{
+    #some of the KOs have been removed from newer versions of KEGG but are still in the
+    #KEGG mapping we just further tie this up.
     my ($koFile, $contigrels, $newoutput) = @_;
     my %hash;
     open my $cleanedContigs, ">", $newoutput;
