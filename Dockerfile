@@ -31,6 +31,8 @@ RUN apt-get update && \
     apt-get install -y make && \
     apt-get install -y git && \
     apt-get install -y libxml2-dev && \
+    apt-get install -y libcurl4-openssl-dev && \
+    apt-get install -y libssl-dev && \
     apt-get clean
 
 #Java -NEO4J ###############################
@@ -42,7 +44,7 @@ RUN apt-get install -y  software-properties-common && \
     apt-get clean
 
 RUN apt-get install -y r-base
-RUN R -e 'install.packages("dplyr", repos="http://cran.bic.nus.edu.sg/")'
+RUN R -e 'install.packages("tidyverse", repos="http://cran.bic.nus.edu.sg/")'
 RUN R -e 'install.packages("igraph", repos="http://cran.bic.nus.edu.sg/")'
 RUN R -e 'install.packages("XML", repos="http://cran.bic.nus.edu.sg/")'
 
