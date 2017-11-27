@@ -108,3 +108,8 @@ Database needs to be mounted, make sure you have the following folder structure.
     ├── schema
     └── store_lock
 ```
+
+After starting the container navigate to `127.0.0.1:7474` on your machine's browser
+
+![login](./login.png)
+![in](./check.png)
