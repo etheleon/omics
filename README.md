@@ -5,7 +5,7 @@
 
 ## Graph Data Model
 
-![workflow](./newGraphDB.svg)
+![workflow](https://cdn.rawgit.com/etheleon/omics/da216df4/newGraphDB.svg)
 
 ## Setup DB (wo Docker)
 
