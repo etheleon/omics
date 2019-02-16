@@ -61,8 +61,8 @@ The following highlights how you will set up MetamapsDB using Docker.
 
 The following details how to download and run a specific omicsDB mentioned in my thesis.
 
-[] Database created by the `.confgiure` script
-[] [s3cmd](https://github.com/s3tools/s3cmd) - for downloading the DB from DigitalOcean
+- [ ] Database created by the `.confgiure` script
+- [ ] [s3cmd](https://github.com/s3tools/s3cmd) - for downloading the DB from DigitalOcean
 
 > The files are stored in `digitalocean spaces`.
 
